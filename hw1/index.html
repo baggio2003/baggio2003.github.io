@@ -68,12 +68,17 @@
           <input type="number" id="inputK" value="6" min="1" max="18">
         </div>
         <div class="input-group">
-          <label for="selectG">Punto Base $G$:</label>
+          <label for="selectG">Punto Base G:</label>
           <select id="selectG">
-            <option value="1,5" selected>G = (1, 5)</option>
-            <option value="2,10">G' = (2, 10)</option>
-            <option value="5,9">G'' = (5, 9)</option>
-            <option value="6,6">G''' = (6, 6)</option>
+            <!-- Punti con Ciclo Massimo (Ordine 18: toccano tutti i punti) -->
+            <option value="6,6" selected>G = (6, 6) — Ciclo Massimo (Ordine 18)</option>
+            <option value="15,4">G = (15, 4) — Ciclo Massimo (Ordine 18)</option>
+            <option value="10,2">G = (10, 2) — Ciclo Massimo (Ordine 18)</option>
+
+            <!-- Punti con cicli intermedi e corti per confronto -->
+            <option value="1,5">G = (1, 5) — Ordine 9 (Testo originale)</option>
+            <option value="8,3">G = (8, 3) — Ordine 6</option>
+            <option value="5,9">G = (5, 9) — Ordine 3 (Ciclo corto)</option>
           </select>
         </div>
       </div>
