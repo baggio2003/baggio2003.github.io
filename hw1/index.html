@@ -4,19 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HW1 — Crittografia a Chiave Pubblica su Curve Ellittiche</title>
-  <!-- Collegamento allo style.css nella root -->
+  
+  <!-- Foglio di stile globale nella root -->
   <link rel="stylesheet" href="../style.css">
+
   <!-- Chart.js via CDN per i grafici statistici -->
-  <!-- Configurazione e caricamento MathJax -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Configurazione MathJax con rendering vettoriale SVG -->
   <script>
     window.MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']],
         displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
       }
     };
   </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head>
 <body>
   <div class="container">
@@ -37,7 +44,7 @@
         avviene tramite moltiplicazione scalare su curva ellittica (standard <strong>secp256k1</strong>):
       </p>
       <div class="math-block">
-        Q = k \cdot G = \underbrace{G + G + \dots + G}_{k \text{ volte}}
+        $$Q = k \cdot G = \underbrace{G + G + \dots + G}_{k \text{ volte}}$$
       </div>
       <p>
         Mentre il calcolo in avanti $k \to Q$ è deterministico ed efficiente, invertire l'operazione 
@@ -48,7 +55,7 @@
         In questa simulazione adottiamo la curva giocattolo con la medesima forma di secp256k1 ($a = 0, b = 7$), definita sul campo finito $\mathbb{F}_{17}$:
       </p>
       <div class="math-block">
-        E(\mathbb{F}_{17}): y^2 \equiv x^3 + 7 \pmod{17}, \quad G = (1, 5)
+        $$E(\mathbb{F}_{17}): y^2 \equiv x^3 + 7 \pmod{17}, \quad G = (1, 5)$$
       </div>
     </section>
 
@@ -146,7 +153,7 @@
       <h2>5. Discussione Critica: One-Way Functions vs Funzioni Hash</h2>
       <p>
         Sebbene sia la moltiplicazione scalare su curve ellittiche sia le funzioni di hash (come SHA-256 o Keccak-256) 
-        siano formalmente funzioni <em>unidirezionali (One-Way Functions)</em>, la loro struttura algebrica risponde a scopi crittografici nettamente distinti:
+        siano formalmente funzioni <em>unidirezionali (One-Way Functions)</em>, la loro struttura algebrica risponde a scopi crittografici distinti:
       </p>
       <ul style="padding-left: 1.25rem; margin-bottom: 1rem;">
         <li style="margin-bottom: 0.75rem;">
