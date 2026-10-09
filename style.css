@@ -1,101 +1,71 @@
 /* ==========================================================================
-   STATISTICS WORKSPACE & HOMEWORK - MODERN AESTHETIC CSS
-   Design: Modern Glassmorphic Dark UI, Radiant Accents & Smooth Micro-Interactions
+   PORTFOLIO STATISTICA - GLOBAL STYLESHEET (style.css)
+   Design: Modern Glassmorphic Dark UI con gradienti e micro-interazioni
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Surface & Base Colors */
+  /* Sfondo & Superfici */
   --bg-main: #090d16;
-  --bg-gradient: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-                 radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.07) 0%, transparent 35%),
-                 radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
+  --bg-radial: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+               radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.10) 0%, transparent 35%),
+               radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
   --card-bg: rgba(18, 24, 38, 0.75);
-  --card-bg-hover: rgba(24, 32, 50, 0.85);
-  --card-elevated: rgba(28, 36, 56, 0.65);
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-hover: rgba(99, 102, 241, 0.4);
+  --card-hover: rgba(24, 32, 52, 0.9);
+  --card-elevated: rgba(26, 34, 54, 0.65);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-accent: rgba(99, 102, 241, 0.4);
 
-  /* Typography */
+  /* Tipografia */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --text-primary: #f8fafc;
+  --font-mono: 'JetBrains Mono', monospace;
+  --text-main: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #64748b;
 
-  /* Radiant Accents & Gradients */
-  --accent-primary: #6366f1;
+  /* Accenti & Gradienti */
+  --accent-indigo: #6366f1;
   --accent-cyan: #06b6d4;
-  --accent-purple: #a855f7;
   --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
-
   --grad-primary: linear-gradient(135deg, #6366f1 0%, #3b82f6 50%, #06b6d4 100%);
-  --grad-glow: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(6, 182, 212, 0.25));
+  --grad-text: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
 
-  /* Elevation & Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.5);
-  --shadow-accent: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
-
-  /* Geometry & Animations */
+  /* Ombre & Raggi */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 10px 30px -6px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 8px 24px -4px rgba(99, 102, 241, 0.35);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 18px;
   --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Base Reset */
+/* Reset Base */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-}
-
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
-  background-image: var(--bg-gradient);
+  background-image: var(--bg-radial);
   background-attachment: fixed;
   color: var(--text-secondary);
   line-height: 1.65;
   padding: 3rem 1.25rem;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-main);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
-}
-
-/* Container */
 .container {
   max-width: 1020px;
   margin: 0 auto;
 }
 
-/* Header Section */
+/* Header */
 header {
   margin-bottom: 2.75rem;
   padding-bottom: 2rem;
@@ -112,6 +82,171 @@ header::after {
   height: 2px;
   background: var(--grad-primary);
   border-radius: 999px;
+}
+
+h1 {
+  font-size: 2.35rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  font-weight: 400;
+  max-width: 780px;
+}
+
+/* Card Generali & Glassmorphism */
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.85rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-md), 0 0 24px -6px rgba(99, 102, 241, 0.2);
+}
+
+.card h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Griglia Sezioni / Assignments */
+.hw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.hw-card {
+  background: var(--card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.hw-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--grad-primary);
+  opacity: 0.6;
+  transition: var(--transition);
+}
+
+.hw-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.hw-card:hover::before {
+  opacity: 1;
+}
+
+.hw-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.hw-card h3 {
+  color: var(--text-main);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.hw-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+.badge-primary {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #a5b4fc;
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+
+/* Link e Bottoni */
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #c7d2fe;
+  transition: var(--transition);
+}
+
+.btn-link:hover {
+  background: var(--grad-primary);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
 }
 
 .back-link {
@@ -138,65 +273,7 @@ header::after {
   transform: translateX(-3px);
 }
 
-h1 {
-  font-size: 2.35rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: -0.035em;
-  line-height: 1.2;
-  margin-bottom: 0.65rem;
-  background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.subtitle {
-  color: var(--text-muted);
-  font-size: 1.05rem;
-  font-weight: 400;
-  max-width: 780px;
-}
-
-/* Glassmorphic Cards */
-.card {
-  background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 1.85rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-md);
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-
-.card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-lg), 0 0 20px -6px rgba(99, 102, 241, 0.15);
-}
-
-.card h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.015em;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.card p {
-  color: var(--text-secondary);
-  font-size: 0.96rem;
-  margin-bottom: 1rem;
-}
-
-/* Inputs, Controls & Forms */
+/* Input, Bottoni e Controlli (per hw1 e hw2) */
 .control-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -225,16 +302,14 @@ textarea {
   background: rgba(13, 17, 26, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
-  color: var(--text-primary);
+  color: var(--text-main);
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-family: inherit;
   transition: var(--transition);
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #818cf8;
   background: rgba(18, 24, 38, 0.95);
@@ -243,14 +318,13 @@ textarea:focus {
 
 textarea {
   width: 100%;
-  min-height: 125px;
+  min-height: 120px;
   resize: vertical;
   line-height: 1.6;
   font-family: var(--font-mono);
   font-size: 0.9rem;
 }
 
-/* Buttons */
 .btn-row {
   display: flex;
   gap: 0.85rem;
@@ -258,7 +332,7 @@ textarea {
   margin-top: 1.4rem;
 }
 
-button, .btn {
+button {
   background: var(--grad-primary);
   color: #ffffff;
   border: none;
@@ -266,40 +340,33 @@ button, .btn {
   padding: 0.75rem 1.45rem;
   font-size: 0.92rem;
   font-weight: 600;
-  font-family: inherit;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.55rem;
-  box-shadow: var(--shadow-accent);
+  box-shadow: var(--shadow-glow);
   transition: var(--transition);
 }
 
-button:hover, .btn:hover {
+button:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
-  box-shadow: 0 12px 28px -4px rgba(99, 102, 241, 0.45);
 }
 
-button:active, .btn:active {
-  transform: translateY(0);
-}
-
-button.secondary, .btn-secondary {
+button.secondary {
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  color: var(--text-main);
   border: 1px solid var(--border-subtle);
   box-shadow: none;
 }
 
-button.secondary:hover, .btn-secondary:hover {
+button.secondary:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--shadow-sm);
 }
 
-/* Stats / KPI Metric Cards */
+/* Statistiche & Grafici (per hw1 e hw2) */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -329,11 +396,6 @@ button.secondary:hover, .btn-secondary:hover {
   opacity: 0.7;
 }
 
-.stat-item:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
-}
-
 .stat-label {
   font-size: 0.72rem;
   font-weight: 700;
@@ -348,10 +410,8 @@ button.secondary:hover, .btn-secondary:hover {
   color: #ffffff;
   font-family: var(--font-mono);
   margin-top: 0.35rem;
-  letter-spacing: -0.02em;
 }
 
-/* Charts Wrapper */
 .chart-wrapper {
   position: relative;
   width: 100%;
@@ -364,7 +424,6 @@ button.secondary:hover, .btn-secondary:hover {
   border: 1px solid var(--border-subtle);
 }
 
-/* Tables */
 .table-container {
   width: 100%;
   overflow-x: auto;
@@ -372,29 +431,24 @@ button.secondary:hover, .btn-secondary:hover {
   margin-top: 1.25rem;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: rgba(10, 14, 23, 0.5);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
-  text-align: left;
 }
 
 th, td {
   padding: 0.85rem 1.15rem;
   border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
 }
 
 th {
   background: rgba(22, 28, 45, 0.95);
-  backdrop-filter: blur(8px);
   color: #f1f5f9;
   font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -403,84 +457,25 @@ th {
 td {
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  color: #e2e8f0;
-}
-
-tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.015);
 }
 
 tr:hover td {
   background: rgba(99, 102, 241, 0.08);
 }
 
-/* Formula & Math Block */
-.math-block {
-  background: rgba(15, 20, 32, 0.9);
-  border: 1px solid var(--border-subtle);
-  border-left: 3px solid var(--accent-primary);
-  border-radius: var(--radius-sm);
-  padding: 0.85rem 1.15rem;
-  margin: 1.15rem 0;
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  color: #e0e7ff;
-  overflow-x: auto;
-}
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-}
-
-.badge-primary {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.35);
-  color: #a5b4fc;
-}
-
-.badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #6ee7b7;
-}
-
 /* Footer */
 footer {
   text-align: center;
   color: var(--text-muted);
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   margin-top: 4rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border-subtle);
 }
 
-/* Responsiveness */
 @media (max-width: 768px) {
-  body {
-    padding: 1.5rem 0.85rem;
-  }
-  h1 {
-    font-size: 1.85rem;
-  }
-  .card {
-    padding: 1.25rem;
-  }
-  .chart-wrapper {
-    min-height: 290px;
-    padding: 0.5rem;
-  }
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
+  body { padding: 1.5rem 0.85rem; }
+  h1 { font-size: 1.85rem; }
+  .card { padding: 1.25rem; }
+  .stats-grid, .hw-grid { grid-template-columns: 1fr; }
 }
