@@ -129,6 +129,43 @@
       <div class="chart-wrapper" style="min-height: 420px; display: flex; justify-content: center; align-items: center;">
         <canvas id="ecCanvas" width="400" height="400"></canvas>
       </div>
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+      <!-- Curva Continua R -->
+      <div style="text-align: center;">
+        <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Forma Continua su ℝ: y² = x³ + 7</h4>
+        <svg width="260" height="260" viewBox="-4 -6 10 12" style="background: #0d1117; border-radius: 8px; border: 1px solid #30363d;">
+          <!-- Assi cartesiani -->
+          <line x1="-4" y1="0" x2="6" y2="0" stroke="#30363d" stroke-width="0.1" />
+          <line x1="0" y1="-6" x2="0" y2="6" stroke="#30363d" stroke-width="0.1" />
+          
+          <!-- Ramo superiore e inferiore (y = ±√(x³ + 7)) -->
+          <path d="M 6,-5.54 C 4,-4.2 2,-2.7 0,-2.64 C -1.2,-2.6 -1.8,-1.5 -1.91,0 C -1.8,1.5 -1.2,2.6 0,2.64 C 2,2.7 4,4.2 6,5.54" 
+                fill="none" stroke="#6366f1" stroke-width="0.25" />
+        </svg>
+      </div>
+
+      <!-- Curva Discreta F_17 -->
+      <div style="text-align: center;">
+        <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Forma Discreta su 𝔽₁₇ (Crittografia)</h4>
+        <svg width="260" height="260" viewBox="-1 -1 18 18" style="background: #0d1117; border-radius: 8px; border: 1px solid #30363d;">
+          <!-- Asse simmetria a 8.5 -->
+          <line x1="0" y1="8.5" x2="16" y2="8.5" stroke="rgba(99,102,241,0.2)" stroke-width="0.15" stroke-dasharray="0.3,0.3" />
+          
+          <!-- Punti discreti -->
+          <g fill="#06b6d4">
+            <circle cx="1" cy="5" r="0.45" /><circle cx="1" cy="12" r="0.45" />
+            <circle cx="2" cy="7" r="0.45" /><circle cx="2" cy="10" r="0.45" />
+            <circle cx="3" cy="0" r="0.45" />
+            <circle cx="5" cy="8" r="0.45" /><circle cx="5" cy="9" r="0.45" />
+            <circle cx="6" cy="6" r="0.45" /><circle cx="6" cy="11" r="0.45" />
+            <circle cx="8" cy="3" r="0.45" /><circle cx="8" cy="14" r="0.45" />
+            <circle cx="10" cy="2" r="0.45" /><circle cx="10" cy="15" r="0.45" />
+            <circle cx="12" cy="1" r="0.45" /><circle cx="12" cy="16" r="0.45" />
+            <circle cx="15" cy="4" r="0.45" /><circle cx="15" cy="13" r="0.45" />
+          </g>
+        </svg>
+      </div>
+    </div>
     </section>
 
     <!-- 4. Esplorazione Statistica -->
