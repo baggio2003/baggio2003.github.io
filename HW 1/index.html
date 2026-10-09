@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HW1 — Crittografia a Chiave Pubblica su Curve Ellittiche</title>
+  <!-- Collegamento allo style.css nella root -->
+  <link rel="stylesheet" href="../style.css">
+  <!-- Chart.js via CDN per i grafici statistici -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="../" class="back-link">← Torna all'indice generale</a>
+      <h1>Homework 1: Private Key → Public Key (ECDLP)</h1>
+      <p class="subtitle">
+        Moltiplicazione scalare su curva ellittica toy $y^2 \equiv x^3 + 7 \pmod{17}$, 
+        visualizzazione su piano discreto ed esplorazione statistica delle proprietà one-way.
+      </p>
+    </header>
+
+    <!-- 1. Introduzione Teorica -->
+    <section class="card">
+      <h2>1. Modello Matematico & Curve in Ethereum</h2>
+      <p>
+        In Ethereum, la derivazione della chiave pubblica a partire dalla chiave privata $k$ 
+        avviene tramite moltiplicazione scalare su curva ellittica (standard <strong>secp256k1</strong>):
+      </p>
+      <div class="math-block">
+        Q = k \cdot G = \underbrace{G + G + \dots + G}_{k \text{ volte}}
+      </div>
+      <p>
+        Mentre il calcolo in avanti $k \to Q$ è deterministico ed efficiente, invertire l'operazione 
+        (trovare $k$ dato $Q$) equivale a risolvere il <strong>Problema del Logaritmo Discreto su Curve Ellittiche (ECDLP)</strong>, 
+        ritenuto computazionalmente intrattabile per campi di grandi dimensioni ($p \approx 2^{256}$).
+      </p>
+      <p>
+        In questa simulazione adottiamo la curva giocattolo con la medesima forma di secp256k1 ($a = 0, b = 7$), definita sul campo finito $\mathbb{F}_{17}$:
+      </p>
+      <div class="math-block">
+        E(\mathbb{F}_{17}): y^2 \equiv x^3 + 7 \pmod{17}, \quad G = (1, 5)
+      </div>
+    </section>
+
+    <!-- 2. Calcolo Interattivo -->
+    <section class="card">
+      <h2>2. Generatore Chiave Pubblica Interattivo</h2>
+      <div class="control-grid">
+        <div class="input-group">
+          <label for="inputK">Chiave Privata (Scalare $k$):</label>
+          <input type="number" id="inputK" value="6" min="1" max="18">
+        </div>
+        <div class="input-group">
+          <label for="selectG">Punto Base $G$:</label>
+          <select id="selectG">
+            <option value="1,5" selected>G = (1, 5)</option>
+            <option value="2,10">G' = (2, 10)</option>
+            <option value="5,9">G'' = (5, 9)</option>
+            <option value="6,6">G''' = (6, 6)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnCompute">Calcola Step-by-Step</button>
+        <button id="btnAnimate" class="secondary">Riproduci Animazione Grafica</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Chiave Privata $k$</div>
+          <div class="stat-value" id="valK">6</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Punto Base $G$</div>
+          <div class="stat-value" id="valG">(1, 5)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Chiave Pubblica $Q = kG$</div>
+          <div class="stat-value" id="valQ">(?, ?)</div>
+        </div>
+      </div>
+
+      <!-- Tabella dei passi intermedi -->
+      <div class="table-container" style="margin-top: 1.5rem;">
+        <table id="stepsTable">
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Operazione</th>
+              <th>Pendenza ($\lambda$)</th>
+              <th>Punto Risultante $(x, y)$</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Visualizzazione Canvas su Campo Finito -->
+    <section class="card">
+      <h2>3. Rappresentazione Visuale su $\mathbb{F}_{17} \times \mathbb{F}_{17}$</h2>
+      <p>
+        I punti validi della curva sul toro discreto modulo 17. Le linee tratteggiate illustrano 
+        il "salto" pseudo-casuale delle coordinate da un multiplo scalare all'altro:
+      </p>
+      <div class="chart-wrapper" style="min-height: 420px; display: flex; justify-content: center; align-items: center;">
+        <canvas id="ecCanvas" width="400" height="400"></canvas>
+      </div>
+    </section>
+
+    <!-- 4. Esplorazione Statistica -->
+    <section class="card">
+      <h2>4. Esplorazione Statistica dei Punti Generati</h2>
+      <p>
+        Analisi di distribuzione per tutti i multipli scalari $k \in \{1, \dots, 18\}$. 
+        Osserva la non-linearità della mappa $k \mapsto x(kG)$ e l'assenza di pattern monotoni:
+      </p>
+
+      <div class="control-grid">
+        <div class="chart-wrapper">
+          <canvas id="chartCoordinates"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="chartBits"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-wrapper" style="margin-top: 1.5rem;">
+        <canvas id="chartScatter"></canvas>
+      </div>
+    </section>
+
+    <!-- 5. Discussione Critica: OWF vs Hash -->
+    <section class="card">
+      <h2>5. Discussione Critica: One-Way Functions vs Funzioni Hash</h2>
+      <p>
+        Sebbene sia la moltiplicazione scalare su curve ellittiche sia le funzioni di hash (come SHA-256 o Keccak-256) 
+        siano formalmente funzioni <em>unidirezionali (One-Way Functions)</em>, la loro struttura algebrica risponde a scopi crittografici nettamente distinti:
+      </p>
+      <ul style="padding-left: 1.25rem; margin-bottom: 1rem;">
+        <li style="margin-bottom: 0.75rem;">
+          <strong>Omomorfismo Algebrico vs Distruzione della Struttura:</strong><br>
+          La moltiplicazione scalare conserva la struttura di gruppo additivo: $(k_1 + k_2)G = k_1 G + k_2 G$. 
+          Questa linearità algebrica è il fondamento della crittografia a chiave pubblica, dei protocolli Diffie-Hellman e delle firme digitali (ECDSA/Schnorr). Al contrario, una funzione hash deve distruggere sistematicamente qualsiasi simmetria o omomorfismo per evitare attacchi algebrici.
+        </li>
+        <li style="margin-bottom: 0.75rem;">
+          <strong>Effetto Valanga (Avalanche Effect):</strong><br>
+          Nelle hash crittografiche il cambiamento di un singolo bit di input cambia mediamente il 50% dei bit di output in modo non correlato. 
+          Su curve ellittiche, incrementare $k$ di $1$ sposta il punto a coordinate apparentemente casuali (pseudo-random walk), ma l'operazione rimane vincolata alla legge del gruppo ($Q_{k+1} = Q_k + G$), consentendo verifiche omomorfiche.
+        </li>
+        <li>
+          <strong>Compressione:</strong><br>
+          Una funzione hash mappa un input di lunghezza arbitraria in una stringa di bit di dimensione fissa. La moltiplicazione scalare mappa invece un elemento del campo/scalare in un punto della curva, senza riduzione di entropia o compressione di flusso.
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Corso di Statistica — Portfolio Homework</p>
+    </footer>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
