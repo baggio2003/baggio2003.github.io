@@ -2,7 +2,7 @@
 
 Raccolta delle esercitazioni pratiche, simulazioni e analisi dati sviluppate in JavaScript per il corso di Statistica, pubblicate su **GitHub Pages**.
 
-🔗 **Live Demo:** `https://<TUO-USERNAME>.github.io/<NOME-REPO>/`
+🔗 **Live Demo:** `https://github.com/baggio2003/baggio2003.github.io.git`
 
 ---
 
