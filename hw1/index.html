@@ -7,6 +7,11 @@
   <!-- Collegamento allo style.css nella root -->
   <link rel="stylesheet" href="../style.css">
   <!-- Chart.js via CDN per i grafici statistici -->
+   <!-- KaTeX via CDN per renderizzare le formule matematiche ($...$) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
