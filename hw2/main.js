@@ -1,49 +1,50 @@
 // ==========================================================================
 // HW2: Wallet Seed to Ethereum Address Pipeline & Statistical Analysis
-// Implements BIP-39, BIP-32, BIP-44, secp256k1, Keccak-256 and EIP-55
+// Standards: BIP-39, BIP-32, BIP-44, secp256k1, Keccak-256, and EIP-55
 // ==========================================================================
 
 let nibbleChartInstance = null;
+let bitParityChartInstance = null;
 
-// Esegue l'intera pipeline di derivazione esponendo tutti gli stadi intermedi
+// Executes the complete 5-stage cryptographic pipeline
 async function executeDerivationPipeline() {
   const mnemonicText = document.getElementById("mnemonicInput").value.trim();
   const path = document.getElementById("derivationPath").value.trim();
 
   try {
-    // 1. BIP-39 Mnemonic -> Seed
+    // 1. BIP-39 Mnemonic -> 512-bit Binary Seed
     const mnemonicObj = ethers.Mnemonic.fromPhrase(mnemonicText);
     const seed = mnemonicObj.computeSeed();
     document.getElementById("outSeed").textContent = seed;
 
-    // 2. BIP-32 / BIP-44 HD Derivation
+    // 2. BIP-32 / BIP-44 HD Derivation -> 256-bit Private Key k
     const hdNode = ethers.HDNodeWallet.fromSeed(seed);
     const childWallet = hdNode.derivePath(path);
     document.getElementById("outPrivKey").textContent = childWallet.privateKey;
 
-    // 3. secp256k1 Public Key (estraiamo la chiave non compressa a 64 byte senza prefisso 0x04)
+    // 3. secp256k1 Public Key Q (extract 64 raw bytes x||y, strip 0x04 prefix)
     const signingKey = new ethers.SigningKey(childWallet.privateKey);
     const fullUncompressedPubKey = signingKey.publicKey; // 0x04 + 64 bytes
     const raw64BytePubKey = "0x" + fullUncompressedPubKey.slice(4);
     document.getElementById("outPubKey").textContent = raw64BytePubKey;
 
-    // 4. Keccak-256 Hash della chiave pubblica
+    // 4. Keccak-256 Hash of Public Key
     const keccakDigest = ethers.keccak256(raw64BytePubKey);
     document.getElementById("outKeccak").textContent = keccakDigest;
 
-    // 5. Troncamento a 20 byte ed EIP-55 Checksum
+    // 5. 20-byte Truncation & EIP-55 Checksum
     const checksummedAddress = childWallet.address;
     document.getElementById("outAddress").textContent = checksummedAddress;
 
-    // Aggiorna il grafico di distribuzione dei caratteri esadecimali
-    updateNibbleDistributionChart(checksummedAddress);
+    // Update statistical charts and metrics
+    updateStatisticalVisualizations(checksummedAddress);
 
   } catch (err) {
-    alert("Errore nella derivazione: assicurati che la frase mnemonica sia valida (12 o 24 parole). Dettaglio: " + err.message);
+    alert("Derivation error: Please ensure your mnemonic is valid (12 or 24 words). Details: " + err.message);
   }
 }
 
-// Calcola la distanza di Hamming tra due stringhe binarie/esadecimali
+// Computes the bitwise Hamming distance between two hex strings
 function calculateBitHammingDistance(hexA, hexB) {
   const cleanA = hexA.toLowerCase().replace("0x", "");
   const cleanB = hexB.toLowerCase().replace("0x", "");
@@ -61,7 +62,7 @@ function calculateBitHammingDistance(hexA, hexB) {
   return diffCount;
 }
 
-// Test dell'effetto valanga: inverte 1 bit di entropia
+// Strict Avalanche Criterion (SAC) Test: Flips exactly 1 bit in root entropy
 async function runAvalancheTest() {
   const originalPhrase = document.getElementById("mnemonicInput").value.trim();
   const path = document.getElementById("derivationPath").value.trim();
@@ -70,15 +71,15 @@ async function runAvalancheTest() {
     const mnemonicA = ethers.Mnemonic.fromPhrase(originalPhrase);
     const entropyHex = mnemonicA.entropy;
 
-    // Modifica il bit meno significativo dell'ultimo byte di entropia
+    // Flip the least significant bit of the last byte in entropy
     const lastByte = parseInt(entropyHex.slice(-2), 16);
     const flippedByte = (lastByte ^ 1).toString(16).padStart(2, "0");
     const mutatedEntropy = entropyHex.slice(0, -2) + flippedByte;
 
-    // Ricostruisce la frase mnemonica mutata con checksum BIP-39 ricalcolato
+    // Reconstruct mutated mnemonic with recomputed BIP-39 checksum
     const mnemonicB = ethers.Mnemonic.fromEntropy(mutatedEntropy);
 
-    // Deriva entrambi gli indirizzi
+    // Derive addresses for both original and 1-bit mutated trees
     const walletA = ethers.HDNodeWallet.fromSeed(mnemonicA.computeSeed()).derivePath(path);
     const walletB = ethers.HDNodeWallet.fromSeed(mnemonicB.computeSeed()).derivePath(path);
 
@@ -86,7 +87,7 @@ async function runAvalancheTest() {
     const addrB = walletB.address;
 
     const flippedBits = calculateBitHammingDistance(addrA, addrB);
-    const totalBits = 160; // 20 bytes * 8
+    const totalBits = 160; // 20 bytes * 8 bits
     const flippedPercentage = ((flippedBits / totalBits) * 100).toFixed(2);
 
     document.getElementById("statFlippedBits").textContent = `${flippedBits} / ${totalBits}`;
@@ -96,40 +97,57 @@ async function runAvalancheTest() {
     document.getElementById("tableAddrMutated").textContent = addrB;
 
   } catch (err) {
-    alert("Errore nel test dell'effetto valanga: " + err.message);
+    alert("Avalanche test error: " + err.message);
   }
 }
 
-// Analisi statistica della distribuzione dei nibble (0-f)
-function updateNibbleDistributionChart(addressHex) {
+// Statistical analysis: Nibble uniform distribution, Chi-Square test, and bit balance
+function updateStatisticalVisualizations(addressHex) {
   const clean = addressHex.toLowerCase().replace("0x", "");
-  const counts = {};
   const hexChars = "0123456789abcdef".split("");
+  const counts = {};
   hexChars.forEach(c => counts[c] = 0);
+
+  let bitZeros = 0;
+  let bitOnes = 0;
 
   for (const ch of clean) {
     if (counts[ch] !== undefined) counts[ch]++;
+    const val = parseInt(ch, 16);
+    for (let b = 0; b < 4; b++) {
+      if ((val >> b) & 1) bitOnes++;
+      else bitZeros++;
+    }
   }
 
-  const ctx = document.getElementById("nibbleChart").getContext("2d");
+  // Calculate Empirical Chi-Square (df = 15, expected = 40 / 16 = 2.5)
+  const expectedFreq = 40 / 16;
+  let chi2 = 0;
+  hexChars.forEach(c => {
+    chi2 += Math.pow(counts[c] - expectedFreq, 2) / expectedFreq;
+  });
+  document.getElementById("statChi2").textContent = chi2.toFixed(3);
+
+  // 1. Bar Chart: Nibble Frequencies (0-f)
+  const ctxNibble = document.getElementById("nibbleChart").getContext("2d");
   if (nibbleChartInstance) nibbleChartInstance.destroy();
 
-  nibbleChartInstance = new Chart(ctx, {
+  nibbleChartInstance = new Chart(ctxNibble, {
     type: "bar",
     data: {
       labels: hexChars,
       datasets: [
         {
-          label: "Frequenza Osservata (su 40 caratteri)",
+          label: "Observed Nibbles (out of 40)",
           data: hexChars.map(c => counts[c]),
-          backgroundColor: "rgba(99, 102, 241, 0.7)",
+          backgroundColor: "rgba(99, 102, 241, 0.75)",
           borderColor: "#6366f1",
           borderWidth: 1
         },
         {
           type: "line",
-          label: "Frequenza Teorica Attesa Uniforme (2.5)",
-          data: hexChars.map(() => 40 / 16),
+          label: "Expected Uniform (2.5)",
+          data: hexChars.map(() => expectedFreq),
           borderColor: "#10b981",
           borderWidth: 2,
           borderDash: [4, 4],
@@ -149,14 +167,46 @@ function updateNibbleDistributionChart(addressHex) {
         },
         x: {
           ticks: { color: "#94a3b8" },
-          grid: { color: "#21262d" }
+          grid: { color: "#21262d" },
+          title: { display: true, text: "Hexadecimal Character (Nibble)", color: "#94a3b8" }
         }
       },
       plugins: {
         legend: { labels: { color: "#f8fafc" } },
         title: {
           display: true,
-          text: "Distribuzione dei Simboli Esadecimali nell'Indirizzo Derivato",
+          text: "Hex Character Frequencies in Address",
+          color: "#f8fafc"
+        }
+      }
+    }
+  });
+
+  // 2. Doughnut Chart: Bit Uniformity (0s vs 1s)
+  const ctxBits = document.getElementById("bitParityChart").getContext("2d");
+  if (bitParityChartInstance) bitParityChartInstance.destroy();
+
+  bitParityChartInstance = new Chart(ctxBits, {
+    type: "doughnut",
+    data: {
+      labels: [`Zero Bits (${bitZeros})`, `One Bits (${bitOnes})`],
+      datasets: [
+        {
+          data: [bitZeros, bitOnes],
+          backgroundColor: ["rgba(6, 182, 212, 0.75)", "rgba(244, 63, 94, 0.75)"],
+          borderColor: ["#06b6d4", "#f43f5e"],
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: "#f8fafc" } },
+        title: {
+          display: true,
+          text: "Address Bit Balance (Target: 80 vs 80)",
           color: "#f8fafc"
         }
       }
@@ -164,7 +214,7 @@ function updateNibbleDistributionChart(addressHex) {
   });
 }
 
-// Genera una nuova frase mnemonica casuale
+// Generates a random valid 12-word mnemonic phrase
 function generateRandomMnemonic() {
   const randomWallet = ethers.Wallet.createRandom();
   document.getElementById("mnemonicInput").value = randomWallet.mnemonic.phrase;
