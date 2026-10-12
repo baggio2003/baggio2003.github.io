@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HW1 — Crittografia a Chiave Pubblica su Curve Ellittiche</title>
+  <title>HW1 — Public-Key Cryptography via Elliptic Curves (ECDLP)</title>
   
-  <!-- Foglio di stile globale nella root -->
+  <!-- Global stylesheet in repository root -->
   <link rel="stylesheet" href="../style.css">
 
-  <!-- Chart.js via CDN per i grafici statistici -->
+  <!-- Chart.js via CDN for statistical visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Configurazione MathJax con rendering vettoriale SVG -->
+  <!-- MathJax Configuration with SVG vector rendering -->
   <script>
     window.MathJax = {
       tex: {
@@ -28,90 +28,92 @@
 <body>
   <div class="container">
     <header>
-      <a href="../" class="back-link">← Torna all'indice generale</a>
+      <a href="../" class="back-link">← Return to Dashboard</a>
       <h1>Homework 1: Private Key → Public Key (ECDLP)</h1>
       <p class="subtitle">
-        Moltiplicazione scalare su curva ellittica toy $y^2 \equiv x^3 + 7 \pmod{17}$, 
-        visualizzazione su piano discreto ed esplorazione statistica delle proprietà one-way.
+        Scalar multiplication over the toy elliptic curve $y^2 \equiv x^3 + 7 \pmod{17}$, 
+        discrete torus visualization, and statistical evaluation of one-way cryptographic properties.
       </p>
     </header>
 
-    <!-- 1. Introduzione Teorica -->
+    <!-- 1. Theoretical Background -->
     <section class="card">
-      <h2>1. Modello Matematico & Curve in Ethereum</h2>
+      <h2>1. Mathematical Model & Ethereum Curves</h2>
       <p>
-        In Ethereum, la derivazione della chiave pubblica a partire dalla chiave privata $k$ 
-        avviene tramite moltiplicazione scalare su curva ellittica (standard <strong>secp256k1</strong>):
+        In Ethereum, public key derivation from a private key $k$ is governed by 
+        elliptic-curve scalar multiplication over the standardized curve <strong>secp256k1</strong>:
       </p>
       <div class="math-block">
-        $$Q = k \cdot G = \underbrace{G + G + \dots + G}_{k \text{ volte}}$$
+        $$Q = k \cdot G = \underbrace{G + G + \dots + G}_{k \text{ times}}$$
       </div>
       <p>
-        Mentre il calcolo in avanti $k \to Q$ è deterministico ed efficiente, invertire l'operazione 
-        (trovare $k$ dato $Q$) equivale a risolvere il <strong>Problema del Logaritmo Discreto su Curve Ellittiche (ECDLP)</strong>, 
-        ritenuto computazionalmente intrattabile per campi di grandi dimensioni ($p \approx 2^{256}$).
+        While the forward computation $k \to Q$ is deterministic and efficient via the double-and-add algorithm, 
+        recovering $k$ given only $Q$ and $G$ requires solving the 
+        <strong>Elliptic Curve Discrete Logarithm Problem (ECDLP)</strong>, which is computationally infeasible 
+        for large prime fields ($p \approx 2^{256}$).
       </p>
       <p>
-        In questa simulazione adottiamo la curva giocattolo con la medesima forma di secp256k1 ($a = 0, b = 7$), definita sul campo finito $\mathbb{F}_{17}$:
+        For educational exploration, we define a toy curve sharing the exact Weierstrass coefficients of secp256k1 ($a = 0, b = 7$), 
+        projected over the small finite field $\mathbb{F}_{17}$:
       </p>
       <div class="math-block">
-        $$E(\mathbb{F}_{17}): y^2 \equiv x^3 + 7 \pmod{17}, \quad G = (1, 5)$$
+        $$E(\mathbb{F}_{17}): y^2 \equiv x^3 + 7 \pmod{17}, \quad G = (6, 6) \text{ or } G = (1, 5)$$
       </div>
     </section>
 
-    <!-- 2. Calcolo Interattivo -->
+    <!-- 2. Interactive Generator -->
     <section class="card">
-      <h2>2. Generatore Chiave Pubblica Interattivo</h2>
+      <h2>2. Interactive Public Key Generator</h2>
       <div class="control-grid">
         <div class="input-group">
-          <label for="inputK">Chiave Privata (Scalare $k$):</label>
+          <label for="inputK">Private Key (Scalar $k$):</label>
           <input type="number" id="inputK" value="6" min="1" max="18">
         </div>
         <div class="input-group">
-          <label for="selectG">Punto Base G:</label>
+          <label for="selectG">Base Point G:</label>
           <select id="selectG">
-            <!-- Punti con Ciclo Massimo (Ordine 18: toccano tutti i punti) -->
-            <option value="6,6" selected>G = (6, 6) — Ciclo Massimo (Ordine 18)</option>
-            <option value="15,4">G = (15, 4) — Ciclo Massimo (Ordine 18)</option>
-            <option value="10,2">G = (10, 2) — Ciclo Massimo (Ordine 18)</option>
+            <!-- Full cycle generators (Order 18) -->
+            <option value="6,6" selected>G = (6, 6) — Maximum Order (Order 18)</option>
+            <option value="15,4">G = (15, 4) — Maximum Order (Order 18)</option>
+            <option value="10,2">G = (10, 2) — Maximum Order (Order 18)</option>
 
-            <!-- Punti con cicli intermedi e corti per confronto -->
-            <option value="1,5">G = (1, 5) — Ordine 9 (Testo originale)</option>
-            <option value="8,3">G = (8, 3) — Ordine 6</option>
-            <option value="5,9">G = (5, 9) — Ordine 3 (Ciclo corto)</option>
+            <!-- Subgroups for comparison -->
+            <option value="1,5">G = (1, 5) — Assignment Base Point (Order 9)</option>
+            <option value="8,3">G = (8, 3) — Intermediate Order (Order 6)</option>
+            <option value="5,9">G = (5, 9) — Short Cycle (Order 3)</option>
           </select>
         </div>
       </div>
 
       <div class="btn-row">
-        <button id="btnCompute">Calcola Step-by-Step</button>
-        <button id="btnAnimate" class="secondary">Riproduci Animazione Grafica</button>
+        <button id="btnCompute">Compute Step-by-Step</button>
+        <button id="btnAnimate" class="secondary">Play Path Animation</button>
       </div>
 
       <div class="stats-grid">
         <div class="stat-item">
-          <div class="stat-label">Chiave Privata $k$</div>
+          <div class="stat-label">Private Key $k$</div>
           <div class="stat-value" id="valK">6</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">Punto Base $G$</div>
+          <div class="stat-label">Base Point $G$</div>
           <div class="stat-value" id="valG">(6, 6)</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">Chiave Pubblica $Q = kG$</div>
-          <div class="stat-value" id="valQ">(?, ?)</div>
+          <div class="stat-label">Toy Public Key $Q = kG$</div>
+          <div class="stat-value" id="valQ" style="color: #10b981;">(?, ?)</div>
         </div>
       </div>
 
-      <!-- Tabella dei passi intermedi -->
+      <!-- Intermediate steps table -->
       <div class="table-container" style="margin-top: 1.5rem;">
         <table id="stepsTable">
           <thead>
             <tr>
-              <th>Passo</th>
-              <th>Operazione</th>
-              <th>Pendenza ($\lambda$)</th>
-              <th>Punto Risultante $(x, y)$</th>
+              <th>Step ($i$)</th>
+              <th>Operation</th>
+              <th>Slope ($\lambda \pmod{17}$)</th>
+              <th>Resulting Point $(x_i, y_i)$</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -119,44 +121,38 @@
       </div>
     </section>
 
-    <!-- 3. Visualizzazione Canvas su Campo Finito -->
+    <!-- 3. Canvas Visualization -->
     <section class="card">
-      <h2>3. Rappresentazione Visuale su $\mathbb{F}_{17} \times \mathbb{F}_{17}$</h2>
+      <h2>3. Discrete Lattice Representation over $\mathbb{F}_{17} \times \mathbb{F}_{17}$</h2>
       <p>
-        I punti validi della curva sul toro discreto modulo 17. Le linee tratteggiate illustrano 
-        il "salto" pseudo-casuale delle coordinate da un multiplo scalare all'altro:
+        All affine points satisfying $y^2 \equiv x^3 + 7 \pmod{17}$ mapped on the finite discrete torus. 
+        The dashed path illustrates the non-linear "leaps" between successive scalar multiples:
       </p>
       <div class="chart-wrapper" style="min-height: 420px; display: flex; justify-content: center; align-items: center;">
         <canvas id="ecCanvas" width="400" height="400"></canvas>
       </div>
     </section>
 
-    <!-- 3.1 Confronto Geometrico SVG -->
+    <!-- 3.1 Geometric Comparison SVG -->
     <section class="card">
-      <h2>3.1. Confronto Geometrico: Curva Continua vs Campo Finito</h2>
+      <h2>3.1. Geometric Duality: Continuous Curve vs Finite Field Lattice</h2>
       <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
-        <!-- Curva Continua R -->
+        <!-- Continuous curve over R -->
         <div style="text-align: center;">
-          <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Forma Continua su ℝ: y² = x³ + 7</h4>
+          <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Continuous Shape over ℝ: $y^2 = x^3 + 7$</h4>
           <svg width="260" height="260" viewBox="-4 -6 10 12" style="background: #0d1117; border-radius: 8px; border: 1px solid #30363d;">
-            <!-- Assi cartesiani -->
             <line x1="-4" y1="0" x2="6" y2="0" stroke="#30363d" stroke-width="0.1" />
             <line x1="0" y1="-6" x2="0" y2="6" stroke="#30363d" stroke-width="0.1" />
-            
-            <!-- Ramo superiore e inferiore (y = ±√(x³ + 7)) -->
             <path d="M 6,-5.54 C 4,-4.2 2,-2.7 0,-2.64 C -1.2,-2.6 -1.8,-1.5 -1.91,0 C -1.8,1.5 -1.2,2.6 0,2.64 C 2,2.7 4,4.2 6,5.54" 
                   fill="none" stroke="#6366f1" stroke-width="0.25" />
           </svg>
         </div>
 
-        <!-- Curva Discreta F_17 -->
+        <!-- Discrete curve over F_17 -->
         <div style="text-align: center;">
-          <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Forma Discreta su 𝔽₁₇ (Crittografia)</h4>
+          <h4 style="color: #94a3b8; margin-bottom: 0.5rem;">Discrete Points over $\mathbb{F}_{17}$ (Cryptography)</h4>
           <svg width="260" height="260" viewBox="-1 -1 18 18" style="background: #0d1117; border-radius: 8px; border: 1px solid #30363d;">
-            <!-- Asse simmetria a 8.5 -->
             <line x1="0" y1="8.5" x2="16" y2="8.5" stroke="rgba(99,102,241,0.2)" stroke-width="0.15" stroke-dasharray="0.3,0.3" />
-            
-            <!-- Punti discreti -->
             <g fill="#06b6d4">
               <circle cx="1" cy="5" r="0.45" /><circle cx="1" cy="12" r="0.45" />
               <circle cx="2" cy="7" r="0.45" /><circle cx="2" cy="10" r="0.45" />
@@ -173,12 +169,12 @@
       </div>
     </section>
 
-    <!-- 4. Esplorazione Statistica -->
+    <!-- 4. Statistical Exploration -->
     <section class="card">
-      <h2>4. Esplorazione Statistica dei Punti Generati</h2>
+      <h2>4. Statistical Exploration of the Multiples Subgroup</h2>
       <p>
-        Analisi di distribuzione per tutti i multipli scalari $k \in \{1, \dots, 18\}$. 
-        Osserva la non-linearità della mappa $k \mapsto x(kG)$ e l'assenza di pattern monotoni:
+        Empirical evaluation of scalar multiples $k \in \{1, \dots, 18\}$. 
+        We analyze the distribution of coordinates, bit parity, apparent uniformity, and the absence of linear correlations:
       </p>
 
       <div class="control-grid">
@@ -193,35 +189,81 @@
       <div class="chart-wrapper" style="margin-top: 1.5rem;">
         <canvas id="chartScatter"></canvas>
       </div>
+
+      <!-- Statistical breakdown table -->
+      <div style="margin-top: 1.5rem; background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.75rem;">Statistical Findings & Properties</h3>
+        <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.7;">
+          <li>
+            <strong>1. Coordinate Frequencies & Quadratic Residues:</strong> 
+            The coordinates $x \in \mathbb{F}_{17}$ are not uniformly distributed over all field elements $\{0, \dots, 16\}$. 
+            For any given $x$, the value $z = x^3 + 7 \pmod{17}$ is either a quadratic residue (yielding two symmetric solutions $\pm y$), zero (one solution $y = 0$), or a non-residue (zero solutions). Hence, some coordinates occur twice while others never appear on the curve.
+          </li>
+          <li>
+            <strong>2. Bit Distribution (LSB Parity):</strong> 
+            The least significant bit (even vs. odd parity) is evenly balanced across the generated coordinates, demonstrating empirical 50/50 entropy without systemic parity bias.
+          </li>
+          <li>
+            <strong>3. Apparent Uniformity vs. Group Law:</strong> 
+            While points appear scattered unpredictably across the grid, their distribution is strictly constrained by the algebraic group law $E(\mathbb{F}_{17})$.
+          </li>
+          <li>
+            <strong>4. Input-Output Correlation ($k \mapsto x(kG)$):</strong> 
+            The mapping shows a pseudo-random walk pattern. The linear correlation coefficient is approximately zero ($r \approx 0$), proving that knowing $k$ offers no continuous or monotonic hint regarding the magnitude of $x_Q$.
+          </li>
+          <li>
+            <strong>5. Avalanche-like Hopping:</strong> 
+            Incrementing $k$ by 1 ($k \to k + 1$) causes large, discontinuous jumps across the field. However, this is <em>algebraic step-hopping</em> governed by $Q_{k+1} = Q_k + G$, rather than an uncorrelated bit-avalanche.
+          </li>
+        </ul>
+      </div>
     </section>
 
-    <!-- 5. Discussione Critica: OWF vs Hash -->
+    <!-- 5. Theoretical Comparison: OWF vs Hash -->
     <section class="card">
-      <h2>5. Discussione Critica: One-Way Functions vs Funzioni Hash</h2>
+      <h2>5. Critical Discussion: One-Way Functions vs. Cryptographic Hash Functions</h2>
       <p>
-        Sebbene sia la moltiplicazione scalare su curve ellittiche sia le funzioni di hash (come SHA-256 o Keccak-256) 
-        siano formalmente funzioni <em>unidirezionali (One-Way Functions)</em>, la loro struttura algebrica risponde a scopi crittografici distinti:
+        While both elliptic-curve scalar multiplication and cryptographic hash functions (such as SHA-256 or Keccak-256) 
+        are formally classified as <strong>One-Way Functions (OWFs)</strong>, their mathematical design fulfills fundamentally distinct roles:
       </p>
-      <ul style="padding-left: 1.25rem; margin-bottom: 1rem;">
-        <li style="margin-bottom: 0.75rem;">
-          <strong>Omomorfismo Algebrico vs Distruzione della Struttura:</strong><br>
-          La moltiplicazione scalare conserva la struttura di gruppo additivo: $(k_1 + k_2)G = k_1 G + k_2 G$. 
-          Questa linearità algebrica è il fondamento della crittografia a chiave pubblica, dei protocolli Diffie-Hellman e delle firme digitali (ECDSA/Schnorr). Al contrario, una funzione hash deve distruggere sistematicamente qualsiasi simmetria o omomorfismo per evitare attacchi algebrici.
-        </li>
-        <li style="margin-bottom: 0.75rem;">
-          <strong>Effetto Valanga (Avalanche Effect):</strong><br>
-          Nelle hash crittografiche il cambiamento di un singolo bit di input cambia mediamente il 50% dei bit di output in modo non correlato. 
-          Su curve ellittiche, incrementare $k$ di $1$ sposta il punto a coordinate apparentemente casuali (pseudo-random walk), ma l'operazione rimane vincolata alla legge del gruppo ($Q_{k+1} = Q_k + G$), consentendo verifiche omomorfiche.
-        </li>
-        <li>
-          <strong>Compressione:</strong><br>
-          Una funzione hash mappa un input di lunghezza arbitraria in una stringa di bit di dimensione fissa. La moltiplicazione scalare mappa invece un elemento del campo/scalare in un punto della curva, senza riduzione di entropia o compressione di flusso.
-        </li>
-      </ul>
+
+      <div class="table-container" style="margin: 1.25rem 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Elliptic-Curve Scalar Multiplication ($k \mapsto kG$)</th>
+              <th>Cryptographic Hash Function ($\text{Hash}(m)$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Algebraic Homomorphism</strong></td>
+              <td style="color: #10b981;"><strong>Preserved:</strong> $(k_1 + k_2)G = k_1 G + k_2 G$. Fundamental for public-key cryptography and ECDSA signatures.</td>
+              <td style="color: #f43f5e;"><strong>Destroyed:</strong> $\text{Hash}(m_1 + m_2) \neq \text{Hash}(m_1) + \text{Hash}(m_2)$. Any linearity is a fatal security flaw.</td>
+            </tr>
+            <tr>
+              <td><strong>Avalanche Effect (SAC)</strong></td>
+              <td><strong>Partial / Algebraic:</strong> Coordinates jump non-linearly, but outputs are deterministically bound by $Q_{k+1} = Q_k + G$.</td>
+              <td><strong>Strict:</strong> Inverting a single input bit flips approximately 50% of all output bits with zero residual correlation.</td>
+            </tr>
+            <tr>
+              <td><strong>Domain & Compression</strong></td>
+              <td><strong>Bijective / Subgroup Mapping:</strong> Maps a 256-bit scalar into a 256-bit point. No entropy loss or arbitrary compression.</td>
+              <td><strong>Lossy Compression:</strong> Maps arbitrary-length inputs into a fixed 256-bit digest, inducing theoretical collisions.</td>
+            </tr>
+            <tr>
+              <td><strong>Core Purpose</strong></td>
+              <td>Asymmetric key pairs, Diffie-Hellman key exchange, digital signatures.</td>
+              <td>Data integrity, commitments, Proof-of-Work, content addressing.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <footer>
-      <p>Corso di Statistica — Portfolio Homework</p>
+      <p>Statistics Course — Academic Portfolio on GitHub Pages</p>
     </footer>
   </div>
 
