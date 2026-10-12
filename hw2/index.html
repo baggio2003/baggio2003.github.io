@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HW2 — From Seed to Ethereum Address</title>
+  <link rel="stylesheet" href="../style.css">
+
+  <!-- Ethers.js v6 via CDN per l'esecuzione della pipeline standard -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+  <!-- Chart.js via CDN per i test statistici -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- MathJax per rendering formule matematiche -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="../" class="back-link">← Torna all'indice generale</a>
+      <h1>Homework 2: Wallet Seed → Ethereum Address Pipeline</h1>
+      <p class="subtitle">
+        Studio approfondito della pipeline crittografica standard: BIP-39, BIP-32, BIP-44, 
+        secp256k1, Keccak-256 ed EIP-55, con verifica empirica dell'effetto valanga e dell'uniformità dei bit.
+      </p>
+    </header>
+
+    <!-- 1. Pipeline Interattiva Step-by-Step -->
+    <section class="card">
+      <h2>1. Pipeline di Derivazione Interattiva</h2>
+      <div class="input-group">
+        <label for="mnemonicInput">Mnemonic Phrase (BIP-39, 12 parole):</label>
+        <textarea id="mnemonicInput" style="min-height: 80px;">candy maple cake sugar pudding cream honey rich smooth crumble sweet treat</textarea>
+      </div>
+
+      <div class="control-grid" style="margin-top: 1rem;">
+        <div class="input-group">
+          <label for="derivationPath">Derivation Path (BIP-44 Ethereum):</label>
+          <input type="text" id="derivationPath" value="m/44'/60'/0'/0/0">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnDerive">Esegui Pipeline Crittografica</button>
+        <button id="btnRandomMnemonic" class="secondary">Genera Mnemonic Casuale</button>
+      </div>
+
+      <!-- Risultati intermedi dettagliati -->
+      <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">1. Seed Binario (PBKDF2-HMAC-SHA512: 512 bit)</div>
+          <div class="stat-value" id="outSeed" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">2. Private Key k Derivata (BIP-44: 256 bit)</div>
+          <div class="stat-value" id="outPrivKey" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem; color: #f43f5e;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">3. Uncompressed Public Key Q (secp256k1: 64 byte x||y)</div>
+          <div class="stat-value" id="outPubKey" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">4. Keccak-256 Digest (32 byte)</div>
+          <div class="stat-value" id="outKeccak" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all; border-left: 3px solid var(--accent-emerald);">
+          <div class="stat-label">5. Ethereum Checksummed Address (EIP-55 Mixed-Case)</div>
+          <div class="stat-value" id="outAddress" style="font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem; color: #10b981;">-</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Test dell'Effetto Valanga (SAC) -->
+    <section class="card">
+      <h2>2. Test Statistico dell'Effetto Valanga (Strict Avalanche Criterion)</h2>
+      <p>
+        Invertiamo esattamente <strong>1 singolo bit</strong> dell'entropia iniziale per osservare come muta l'indirizzo Ethereum risultante:
+      </p>
+
+      <div class="btn-row">
+        <button id="btnRunAvalanche" class="secondary">Esegui Test Valanga su Bit Singolo</button>
+      </div>
+
+      <div class="stats-grid" style="margin-top: 1.25rem;">
+        <div class="stat-item">
+          <div class="stat-label">Bit Alterati nell'Indirizzo</div>
+          <div class="stat-value" id="statFlippedBits">- / 160</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Percentuale di Mutazione</div>
+          <div class="stat-value" id="statFlippedPct">-%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Valore Ideale Teorico (SAC)</div>
+          <div class="stat-value">50.0%</div>
+        </div>
+      </div>
+
+      <div class="table-container" style="margin-top: 1.25rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>Versione</th>
+              <th>Indirizzo Derivato</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Originale</strong></td>
+              <td id="tableAddrOriginal" style="color: #60a5fa;">-</td>
+            </tr>
+            <tr>
+              <td><strong>Bit Modificato</strong></td>
+              <td id="tableAddrMutated" style="color: #f43f5e;">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Analisi di Distribuzione Esadecimale (Uniformità) -->
+    <section class="card">
+      <h2>3. Test di Uniformità sui Caratteri Esadecimali (Nibbles)</h2>
+      <p>
+        Verifica della frequenza empirica dei 16 nibble (<code>0</code>–<code>f</code>) sull'indirizzo derivato rispetto alla distribuzione discreta uniforme attesa:
+      </p>
+      <div class="chart-wrapper">
+        <canvas id="nibbleChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 4. Note Teoriche & Quadro Storico -->
+    <section class="card">
+      <h2>4. Quadro Storico & Analisi Comparativa delle Primitive</h2>
+      <p>
+        La pipeline di Ethereum non adotta un singolo algoritmo monolitico per via della separazione rigorosa dei domini di sicurezza:
+      </p>
+      <ul style="padding-left: 1.25rem; margin-bottom: 1rem;">
+        <li style="margin-bottom: 0.75rem;">
+          <strong>BIP-39 / BIP-32 / BIP-44:</strong> Gestione deterministica e recupero gerarchico di spazi di chiavi. L'uso di PBKDF2 mitiga attacchi a forza bruta su dizionari grazie al costo computazionale regolabile (2048 iterazioni).
+        </li>
+        <li style="margin-bottom: 0.75rem;">
+          <strong>secp256k1:</strong> Consente l'autenticazione asimmetrica delle transazioni via firma digitale ECDSA, sfruttando la difficoltà dell'ECDLP e l'omomorfismo del gruppo.
+        </li>
+        <li style="margin-bottom: 0.75rem;">
+          <strong>Keccak-256 vs SHA3-256:</strong> Ethereum ha fissato le specifiche nel 2014-2015, prima che il NIST rilasciasse FIPS 202 con il cambio di padding da <code>0x01</code> a <code>0x06</code>. Di conseguenza, Ethereum impiega la versione originaria della funzione spugna Keccak.
+        </li>
+        <li>
+          <strong>EIP-55:</strong> Implementa un checksum senza espandere la lunghezza dell'indirizzo a 20 byte, garantendo retrocompatibilità e rilevamento immediato di errori di digitazione.
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Corso di Statistica — Portfolio Homework</p>
+    </footer>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
