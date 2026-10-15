@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HW3 — ECC Encryption, Caesar Cipher & Statistical vs. Algebraic Cryptanalysis</title>
+  
+  <!-- Global stylesheet in repository root -->
+  <link rel="stylesheet" href="../style.css">
+
+  <!-- Chart.js via CDN for statistical visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- MathJax Configuration with SVG vector rendering -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    .math-block {
+      overflow-x: auto;
+      max-width: 100%;
+      padding: 0.85rem 1rem;
+    }
+    .phase-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .cipher-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      margin-top: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="../" class="back-link">← Return to Dashboard</a>
+      <h1>Homework 3: Toy ECC vs. Caesar Cipher & Cryptanalysis</h1>
+      <p class="subtitle">
+        Comparative implementation of Asymmetric Toy ECC Encryption and the Symmetric Caesar Cipher, 
+        featuring Statistical Frequency Cryptanalysis ($\chi^2$ & Bigrams) versus Algebraic ECDLP Attacks (Exhaustive & Baby-Step Giant-Step).
+      </p>
+    </header>
+
+    <!-- ===================================================================
+         SECTION 1: THEORETICAL ARCHITECTURE & ALGORITHM STEPS
+         =================================================================== -->
+    <section class="card">
+      <h2>1. Encryption Schemes: Toy ECC vs. Caesar Cipher</h2>
+      <p>
+        We encrypt the exact same plaintext using two fundamentally different paradigms: an asymmetric scheme built upon 
+        the elliptic curve $y^2 \equiv x^3 + 7 \pmod p$ (the <strong>secp256k1</strong> equation over a finite prime field) and the classical symmetric <strong>Caesar Cipher</strong>.
+      </p>
+
+      <div class="control-grid" style="margin-top: 1.25rem;">
+        <!-- Toy ECC Card -->
+        <div class="phase-card" style="margin-bottom: 0;">
+          <div class="phase-header">
+            <h3 style="color: var(--text-primary); font-size: 1.05rem; margin: 0;">Scheme A: Toy ECC Encryption (ECDH / ElGamal)</h3>
+            <span class="badge badge-primary">Asymmetric</span>
+          </div>
+          <ol style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
+            <li><strong>Key Generation (Alice):</strong> Selects a secret scalar private key $d_A \in [1, N]$ and publishes her public key point $Q_A = d_A \cdot G$.</li>
+            <li><strong>Ephemeral Encapsulation (Bob):</strong> Picks a random ephemeral scalar $r$, computes ephemeral public point $R = r \cdot G$, and derives the shared curve point $S = r \cdot Q_A$.</li>
+            <li>
+              <strong>Character Masking:</strong> For each letter $m_i \in \{0, \dots, 25\}$, Bob derives step point $S_i = (r + i) \cdot Q_A = (x_{S_i}, y_{S_i})$ (or static $S$ in ECB mode) and masks:
+              $$c_i = (m_i + x_{S_i}) \pmod{26}$$
+              The transmitted ciphertext is the pair $(R, \mathbf{c})$.
+            </li>
+            <li>
+              <strong>Decryption (Alice):</strong> Using her private key $d_A$, Alice reconstructs the base shared point from $R$:
+              $$S' = d_A \cdot R = d_A(rG) = r(d_A G) = r Q_A = S$$
+              She then computes $S_i$ and recovers $m_i = (c_i - x_{S_i}) \pmod{26}$.
+            </li>
+          </ol>
+        </div>
+
+        <!-- Caesar Card -->
+        <div class="phase-card" style="margin-bottom: 0;">
+          <div class="phase-header">
+            <h3 style="color: var(--text-primary); font-size: 1.05rem; margin: 0;">Scheme B: The Caesar Cipher</h3>
+            <span class="badge badge-success">Symmetric</span>
+          </div>
+          <ol style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
+            <li><strong>Key Setup:</strong> Alice and Bob must share the exact same secret shift integer $k \in \{0, \dots, 25\}$ over a pre-existing secure channel.</li>
+            <li>
+              <strong>Encryption (Bob):</strong> Shifts each alphabetical character $m_i \in \{0, \dots, 25\}$ uniformly modulo 26:
+              $$c_i = E_k(m_i) = (m_i + k) \pmod{26}$$
+            </li>
+            <li>
+              <strong>Decryption (Alice):</strong> Applies the inverse modular translation using the identical secret key $k$:
+              $$m_i = D_k(c_i) = (c_i - k) \pmod{26}$$
+            </li>
+            <li><strong>Statistical Footprint:</strong> Because the same offset $k$ is added to every character, the ciphertext histogram is simply a cyclic horizontal rotation of the plaintext histogram.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Comparative Table -->
+      <div class="table-container" style="margin-top: 1.5rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Caesar Cipher</th>
+              <th>Toy ECC Scheme (Counter / Ephemeral Mode)</th>
+              <th>Production ECC (secp256k1 ECIES)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Key Symmetry</strong></td>
+              <td>Symmetric ($k_{\text{enc}} = k_{\text{dec}}$)</td>
+              <td>Asymmetric ($Q_A$ public, $d_A$ private, $r$ ephemeral)</td>
+              <td>Asymmetric + Authenticated DEM (AES-GCM)</td>
+            </tr>
+            <tr>
+              <td><strong>Key Space ($|\mathcal{K}|$)</strong></td>
+              <td>$26$ keys ($\approx 4.7$ bits)</td>
+              <td>Restricted $N \in [18, 2000]$ ($\approx 4\text{--}11$ bits)</td>
+              <td>$n \approx 1.158 \times 10^{77}$ ($256$ bits)</td>
+            </tr>
+            <tr>
+              <td><strong>Histogram / Frequencies</strong></td>
+              <td style="color: #f43f5e;">Preserved (shifted monoalphabetic peaks)</td>
+              <td style="color: #10b981;">Flattened (polyalphabetic coordinate masking)</td>
+              <td style="color: #10b981;">Computationally indistinguishable from random</td>
+            </tr>
+            <tr>
+              <td><strong>Primary Attack Vector</strong></td>
+              <td>Statistical Frequency Analysis ($\chi^2$, N-grams)</td>
+              <td>Algebraic ECDLP Search ($O(N)$ or BSGS $O(\sqrt{N})$)</td>
+              <td>Computationally infeasible ($O(2^{128})$ via Pollard's $\rho$)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SECTION 2: INTERACTIVE DUAL ENCRYPTION & DECRYPTION LAB
+         =================================================================== -->
+    <section class="card">
+      <h2>2. Interactive Dual Encryption & Decryption Laboratory</h2>
+      <p>
+        Enter any message below to encrypt and decrypt it simultaneously with both the <strong>Toy ECC Scheme</strong> (over $E(\mathbb{F}_{199}): y^2 \equiv x^3 + 7 \pmod{199}$) and the <strong>Caesar Cipher</strong>. Compare their resulting letter frequency distributions:
+      </p>
+
+      <div class="input-group">
+        <label for="plainInput">Plaintext Message:</label>
+        <textarea id="plainInput" style="min-height: 70px;">CRYPTOGRAPHY RELIES ON MATHEMATICAL HARDNESS AND STATISTICAL ENTROPY TO PROTECT SECRET COMMUNICATIONS</textarea>
+      </div>
+
+      <div class="control-grid" style="margin-top: 1rem;">
+        <div class="input-group">
+          <label for="eccPrivKey">Alice's Toy ECC Private Key ($d_A \in [1, 180]$):</label>
+          <input type="number" id="eccPrivKey" value="47" min="1" max="180">
+        </div>
+        <div class="input-group">
+          <label for="eccEphemeral">Bob's Ephemeral Nonce ($r \in [1, 180]$):</label>
+          <input type="number" id="eccEphemeral" value="29" min="1" max="180">
+        </div>
+        <div class="input-group">
+          <label for="eccMode">Toy ECC Masking Mode (Design Test):</label>
+          <select id="eccMode">
+            <option value="poly" selected>Polyalphabetic Stepping: S_i = (r + i)·Q_A (Secure Mask)</option>
+            <option value="ecb">Static Shared Secret: S = r·Q_A (Design Flaw → Monoalphabetic!)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="caesarKey">Caesar Secret Shift Key ($k \in [0, 25]$):</label>
+          <input type="number" id="caesarKey" value="11" min="0" max="25">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnRunEncryption">Encrypt & Decrypt Message</button>
+      </div>
+
+      <!-- Dual Output Grid -->
+      <div class="control-grid" style="margin-top: 1.5rem;">
+        <!-- ECC Outputs -->
+        <div class="phase-card" style="margin-bottom: 0;">
+          <h3 style="color: #818cf8; font-size: 1rem; margin-bottom: 0.75rem;">Toy ECC Pipeline Output</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">Public Key $Q_A = d_A G$ & Ephemeral $R = rG$:</div>
+          <div class="cipher-box" id="outEccParams">-</div>
+
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">ECC Ciphertext ($\mathbf{c}$):</div>
+          <div class="cipher-box" id="outEccCipher" style="color: #60a5fa;">-</div>
+
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Decrypted via $S' = d_A \cdot R$:</div>
+          <div class="cipher-box" id="outEccDecrypted" style="color: #10b981;">-</div>
+        </div>
+
+        <!-- Caesar Outputs -->
+        <div class="phase-card" style="margin-bottom: 0;">
+          <h3 style="color: #10b981; font-size: 1rem; margin-bottom: 0.75rem;">Caesar Cipher Pipeline Output</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">Symmetric Key Parameter & Index of Coincidence ($IC$):</div>
+          <div class="cipher-box" id="outCaesarParams">-</div>
+
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Caesar Ciphertext ($E_k(M)$):</div>
+          <div class="cipher-box" id="outCaesarCipher" style="color: #f43f5e;">-</div>
+
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.75rem;">Decrypted via $D_k(C)$:</div>
+          <div class="cipher-box" id="outCaesarDecrypted" style="color: #10b981;">-</div>
+        </div>
+      </div>
+
+      <!-- Frequency Comparison Chart -->
+      <div class="chart-wrapper" style="margin-top: 1.5rem;">
+        <canvas id="freqComparisonChart"></canvas>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SECTION 3: STATISTICAL CRYPTANALYSIS OF THE CAESAR CIPHER
+         =================================================================== -->
+    <section class="card">
+      <h2>3. Statistical Cryptanalysis of the Caesar Cipher</h2>
+      <p>
+        Because the Caesar cipher preserves monographic and digraphic frequencies up to a cyclic shift $s \in \{0, \dots, 25\}$, 
+        we can recover the key automatically without human intervention by comparing decrypted candidates $D_s(C)$ against an English reference corpus:
+      </p>
+
+      <div class="math-block">
+        $$\hat{k}_{\chi^2} = \arg\min_{s \in \{0,\dots,25\}} \sum_{i=0}^{25} \frac{\big(O_i(s) - L \cdot p_i\big)^2}{L \cdot p_i}, \qquad \hat{k}_{\text{N-gram}} = \arg\max_{s \in \{0,\dots,25\}} \sum_{j=1}^{L-1} \log P_{\text{bigram}}\big(D_s(c_j), D_s(c_{j+1})\big)$$
+      </div>
+
+      <div class="btn-row">
+        <button id="btnBreakCaesar">Run Statistical Cryptanalysis on Current Caesar Ciphertext</button>
+        <button id="btnRunLengthBenchmark" class="secondary">Run Monte Carlo Accuracy vs. Text Length Benchmark</button>
+      </div>
+
+      <!-- Recovered Key Comparison -->
+      <div class="stats-grid" style="margin-top: 1.25rem;">
+        <div class="stat-item">
+          <div class="stat-label">1. Chi-Square ($\chi^2$) Attack</div>
+          <div class="stat-value" id="statChi2Key" style="color: #10b981;">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">2. Bigram Log-Likelihood Attack</div>
+          <div class="stat-value" id="statBigramKey" style="color: #60a5fa;">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">3. Dictionary Brute-Force Search</div>
+          <div class="stat-value" id="statDictKey" style="color: #f59e0b;">-</div>
+        </div>
+      </div>
+
+      <div class="control-grid" style="margin-top: 1.5rem;">
+        <div class="chart-wrapper">
+          <canvas id="chi2SpectrumChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="lengthBenchmarkChart"></canvas>
+        </div>
+      </div>
+
+      <div class="phase-card" style="margin-top: 1.5rem; margin-bottom: 0;">
+        <h3 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 0.5rem;">Effectiveness, Limitations & Method Comparison</h3>
+        <ul style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.65;">
+          <li><strong>Effect of Ciphertext Length ($L$):</strong> For $L \ge 40$ characters, monographic $\chi^2$ minimization achieves nearly $100\%$ key recovery accuracy. On very short ciphertexts ($L \le 10$), high sampling variance causes atypical letter distributions (e.g., short words lacking <code>E</code> or <code>T</code>), leading to false minima.</li>
+          <li><strong>Monographic ($\chi^2$) vs. N-Gram (Bigram) Scoring:</strong> Bigram scoring captures structural transition probabilities (such as <code>TH</code>, <code>HE</code>, <code>QU</code>, while penalizing impossible pairs like <code>JX</code> or <code>QZ</code>). Combining monographic and bigram log-likelihoods significantly boosts accuracy on short strings ($5 \le L \le 20$).</li>
+          <li><strong>Exhaustive Key Search (Brute-Force):</strong> Since $|\mathcal{K}| = 26$, enumerating all candidates is instantaneous ($O(26 \cdot L)$), but automating the selection still requires a statistical or lexical distinguisher (cannot decrypt zero-redundancy random strings).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SECTION 4: ALGEBRAIC ATTACK ON THE TOY ECC SCHEME (ECDLP)
+         =================================================================== -->
+    <section class="card">
+      <h2>4. Algebraic Attack on the Toy ECC Scheme (Restricted Key Space)</h2>
+      <p>
+        Unlike the Caesar cipher, polyalphabetic Toy ECC flattens letter frequencies. However, because the private key $d_A$ is restricted to a small range $[1, N]$, an attacker who intercepts the public parameters $(G, Q_A)$ and ciphertext $(R, \mathbf{c})$ can directly solve the <strong>Elliptic Curve Discrete Logarithm Problem (ECDLP)</strong>:
+      </p>
+
+      <div class="math-block">
+        $$\text{Find } \hat{d}_A \in [1, N] \text{ such that } \hat{d}_A \cdot G = Q_A \quad \Longrightarrow \quad \text{Compute } S = \hat{d}_A \cdot R \text{ and decrypt } \mathbf{c}$$
+      </div>
+
+      <div class="btn-row">
+        <button id="btnAttackEcc">Launch ECDLP Key-Recovery Attack (Exhaustive vs. BSGS)</button>
+      </div>
+
+      <div class="stats-grid" style="margin-top: 1.25rem;">
+        <div class="stat-item">
+          <div class="stat-label">Recovered Private Key ($\hat{d}_A$)</div>
+          <div class="stat-value" id="statRecoveredD" style="color: #f43f5e;">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Exhaustive Search Ops ($O(N)$)</div>
+          <div class="stat-value" id="statBruteOps">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Baby-Step Giant-Step Ops ($O(\sqrt{N})$)</div>
+          <div class="stat-value" id="statBsgsOps" style="color: #10b981;">-</div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">Plaintext Recovered by Attacker:</div>
+      <div class="cipher-box" id="outAttackerPlaintext" style="color: #10b981;">-</div>
+
+      <div class="chart-wrapper" style="margin-top: 1.5rem;">
+        <canvas id="ecdlpComplexityChart"></canvas>
+      </div>
+
+      <!-- Critical Analysis & Optional Deep Dive -->
+      <div class="control-grid" style="margin-top: 1.5rem;">
+        <div class="phase-card" style="margin-bottom: 0;">
+          <h3 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 0.5rem;">Algebraic Attack vs. Statistical Cryptanalysis</h3>
+          <ul style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
+            <li><strong>Deterministic vs. Probabilistic:</strong> The ECDLP attack verifies an exact mathematical identity ($\hat{d}G = Q_A$). It succeeds with $100\%$ certainty even if the message is 1 character long or consists of completely random bytes. Statistical attacks on Caesar require plaintext redundancy and fail on short or random inputs.</li>
+            <li><strong>Why Infeasible on Production secp256k1:</strong> Real secp256k1 uses a 256-bit prime subgroup order $n \approx 1.158 \times 10^{77}$. Exhaustive search takes $O(2^{256})$ steps, and $O(\sqrt{n})$ algorithms (Pollard's $\rho$ / BSGS) still require $\approx 2^{128} \approx 3.4 \times 10^{38}$ curve operations—billions of times the age of the universe on modern supercomputers.</li>
+          </ul>
+        </div>
+
+        <div class="phase-card" style="margin-bottom: 0;">
+          <h3 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 0.5rem;">Restricted Key Space vs. Toy Design Flaws (Optional)</h3>
+          <ul style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6;">
+            <li><strong>Key-Space Weaknesses:</strong> A small bound $N$ enables $O(N)$ linear search and $O(\sqrt{N})$ <em>Baby-Step Giant-Step (BSGS)</em> or <em>Pollard's Kangaroo</em>. If the curve order is composite, <em>Pohlig-Hellman</em> reduces ECDLP to prime factors.</li>
+            <li><strong>Structural Design Flaws (Independent of Key Size!):</strong>
+              <ol style="padding-left: 1.1rem; margin-top: 0.3rem;">
+                <li><em>Static Masking (ECB Mode):</em> If $S = rQ_A$ is applied statically to all letters ($c_i = m_i + x_S \pmod{26}$), the scheme degenerates into a Caesar cipher! An attacker breaks it via $\chi^2$ frequency analysis in milliseconds <strong>even if $d_A$ is a full 256-bit key</strong>.</li>
+                <li><em>Nonce Reuse ($r_1 = r_2$):</em> Encrypting two messages with the same ephemeral $r$ leaks $C^{(1)} - C^{(2)} \equiv M^{(1)} - M^{(2)} \pmod{26}$.</li>
+                <li><em>Malleability (No MAC):</em> Adding $\Delta$ to $c_i$ predictably shifts the decrypted letter by $+\Delta$.</li>
+              </ol>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Statistics Course — Academic Portfolio on GitHub Pages</p>
+    </footer>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
