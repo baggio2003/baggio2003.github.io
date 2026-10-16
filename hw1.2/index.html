@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HW1.2 — From Wallet Seed to Ethereum Address</title>
+  
+  <!-- Global stylesheet in repository root -->
+  <link rel="stylesheet" href="../style.css">
+
+  <!-- Ethers.js v6 via CDN for standard cryptographic pipeline -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+  <!-- Chart.js via CDN for statistical tests -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- MathJax Configuration with SVG vector rendering -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    /* Assicura che nessun blocco matematico o codice possa mai sbordare a destra */
+    .math-block {
+      overflow-x: auto;
+      max-width: 100%;
+      padding: 0.85rem 1rem;
+    }
+    .phase-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .phase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .phase-io {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .phase-io span {
+      color: var(--text-muted);
+    }
+    .phase-io strong {
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="../" class="back-link">← Return to Dashboard</a>
+      <h1>Homework 1.2: Wallet Seed → Ethereum Address Pipeline</h1>
+      <p class="subtitle">
+        Deep dive into Ethereum's layered cryptographic standards: BIP-39, BIP-32, BIP-44, 
+        secp256k1, Keccak-256, and EIP-55, with empirical evaluation of the Strict Avalanche Criterion (SAC) and bit uniformity.
+      </p>
+    </header>
+
+    <!-- 1. Conceptual Breakdown of Primitives -->
+    <section class="card">
+      <h2>1. Conceptual Classification of Cryptographic Primitives</h2>
+      <p>
+        Building a modern non-custodial cryptocurrency wallet relies on distinct primitive categories, 
+        each engineered to meet orthogonal mathematical constraints:
+      </p>
+
+      <div class="table-container" style="margin: 1.25rem 0;">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Primary Purpose</th>
+              <th>Core Mathematical Properties</th>
+              <th>Pipeline Component</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Key Generation</strong></td>
+              <td>Pure source entropy sampling</td>
+              <td>Non-deterministic, uncorrelated, maximum Shannon entropy ($H \ge 128 \text{ bits}$) via CSPRNG</td>
+              <td>CSPRNG Entropy (128–256 bits)</td>
+            </tr>
+            <tr>
+              <td><strong>Key Derivation (KDF)</strong></td>
+              <td>One-way deterministic expansion</td>
+              <td>Computationally hard / memory-hard stretching to resist dictionary attacks; pseudo-randomness</td>
+              <td>BIP-39 (PBKDF2), BIP-32 (HMAC-SHA512)</td>
+            </tr>
+            <tr>
+              <td><strong>Public-Key Cryptography</strong></td>
+              <td>Asymmetric identity & signatures</td>
+              <td>Algebraic group homomorphism; intractability of the reverse trapdoor (ECDLP)</td>
+              <td>secp256k1 ($Q = k \cdot G$)</td>
+            </tr>
+            <tr>
+              <td><strong>Cryptographic Hashing</strong></td>
+              <td>Fixed-size digest & compression</td>
+              <td>Pre-image resistance, collision resistance, algebraic structure destruction, Strict Avalanche Criterion</td>
+              <td>Keccak-256</td>
+            </tr>
+            <tr>
+              <td><strong>Checksum</strong></td>
+              <td>Accidental typo detection</td>
+              <td>High Hamming distance sensitivity to character swaps and typos; zero secrecy required</td>
+              <td>EIP-55 (Capitalization mask)</td>
+            </tr>
+            <tr>
+              <td><strong>Encoding</strong></td>
+              <td>Bijective textual representation</td>
+              <td>Reversible, 1-to-1 mapping for machine/human transportability; preserves underlying entropy</td>
+              <td>Hexadecimal (`0x...`)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. Step-by-Step Architecture Guide -->
+    <section class="card">
+      <h2>2. Step-by-Step Architecture: From Seed to Checksummed Address</h2>
+      <p>
+        Ethereum decouples wallet generation into a deterministic sequence of modular standards. 
+        Each phase transforms raw entropy into usable cryptographic identifiers through precise mathematical mappings:
+      </p>
+
+      <!-- PHASE 1 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <h3 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Phase 1: BIP-39 — Mnemonic Words & Binary Seed</h3>
+          <span class="badge badge-primary">Key Management</span>
+        </div>
+
+        <div class="phase-io">
+          <div><span>Input:</span> <strong>128 bits of CSPRNG Entropy</strong></div>
+          <div><span>Output:</span> <strong>12 Mnemonic Words & 512-bit Binary Seed</strong></div>
+        </div>
+
+        <p style="font-size: 0.92rem; margin-top: 0.5rem;">
+          Raw binary entropy is prone to transcription errors. BIP-39 encodes this entropy into human-readable words and stretches it into a cryptographic seed:
+        </p>
+        <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+          <li><strong>Checksum append:</strong> A 4-bit checksum ($\text{SHA-256}(\text{entropy})[:4]$) is appended to the 128-bit entropy, producing 132 bits.</li>
+          <li><strong>Word mapping:</strong> The 132 bits are split into 12 chunks of 11 bits ($2^{11} = 2048$). Each chunk indexes an exact word from the BIP-39 dictionary.</li>
+          <li><strong>Key stretching (PBKDF2):</strong> The words are hashed over 2048 rounds of HMAC-SHA512 to produce a 512-bit master seed, drastically increasing brute-force cost:</li>
+        </ul>
+
+        <div class="math-block">
+          $$\begin{aligned}           \text{Seed} = \text{PBKDF2}\big(             & \text{PRF} = \text{HMAC-SHA512}, \\             & \text{Password} = \text{mnemonic}, \\             & \text{Salt} = \text{"mnemonic"} + \text{passphrase}, \\             & c = 2048, \quad \text{dkLen} = 64 \text{ bytes}           \big)           \end{aligned}$$
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <h3 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Phase 2: BIP-32 & BIP-44 — Hierarchical Deterministic (HD) Derivation</h3>
+          <span class="badge badge-primary">Key Derivation</span>
+        </div>
+
+        <div class="phase-io">
+          <div><span>Input:</span> <strong>512-bit Seed & Derivation Path</strong></div>
+          <div><span>Output:</span> <strong>256-bit Private Key ($k$) & Chain Code</strong></div>
+        </div>
+
+        <p style="font-size: 0.92rem; margin-top: 0.5rem;">
+          To avoid backing up multiple independent keys, BIP-32 and BIP-44 organize an infinite tree of deterministic key pairs under a single root seed:
+        </p>
+        <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+          <li><strong>Master Key generation:</strong> $\text{HMAC-SHA512}(\text{Key} = \text{"Bitcoin seed"}, \text{Data} = \text{Seed})$ produces the 256-bit Master Private Key (left half) and 256-bit Master Chain Code (right half).</li>
+          <li>
+            <strong>Standardized derivation path:</strong> BIP-44 enforces a structured five-level derivation hierarchy:
+            $$\text{Path} = m \,/\, \text{purpose}' \,/\, \text{coin\_type}' \,/\, \text{account}' \,/\, \text{change} \,/\, \text{address\_index}$$
+          </li>
+          <li><strong>Ethereum path:</strong> <code>m/44'/60'/0'/0/0</code> targets coin type $60'$ (Ethereum). Hardened derivation ($'$) isolates branches so a leaked child key cannot compromise parent or sibling keys.</li>
+        </ul>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <h3 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Phase 3: secp256k1 — Asymmetric Public Key Generation</h3>
+          <span class="badge badge-success">Asymmetric Crypto</span>
+        </div>
+
+        <div class="phase-io">
+          <div><span>Input:</span> <strong>256-bit Private Key ($k$)</strong></div>
+          <div><span>Output:</span> <strong>64-byte Uncompressed Public Key ($Q$)</strong></div>
+        </div>
+
+        <p style="font-size: 0.92rem; margin-top: 0.5rem;">
+          The private key scalar $k \in [1, n-1]$ is mapped to an elliptic curve point $Q$ via scalar multiplication with the standardized base generator $G$:
+        </p>
+        <div class="math-block">
+          $$Q = k \cdot G = (x_Q, y_Q) \quad \text{on } y^2 \equiv x^3 + 7 \pmod p$$
+        </div>
+        <p style="font-size: 0.92rem; line-height: 1.6;">
+          In Ethereum, the uncompressed public key is the direct 64-byte concatenation $(x_Q \parallel y_Q)$ without the legacy <code>0x04</code> prefix. 
+          The ECDLP guarantee ensures that recovering $k$ from $Q$ is computationally impossible, allowing $Q$ to authenticate signatures safely.
+        </p>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <h3 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Phase 4: Keccak-256 Hashing & 20-Byte Address Truncation</h3>
+          <span class="badge badge-primary">Hashing & Compression</span>
+        </div>
+
+        <div class="phase-io">
+          <div><span>Input:</span> <strong>64-byte Public Key $(x_Q \parallel y_Q)$</strong></div>
+          <div><span>Output:</span> <strong>20-byte (160-bit) Raw Address</strong></div>
+        </div>
+
+        <p style="font-size: 0.92rem; margin-top: 0.5rem;">
+          The 64-byte public key is hashed using the original Keccak-256 sponge function:
+        </p>
+        <div class="math-block">
+          $$H = \text{Keccak-256}(x_Q \parallel y_Q) \quad (32 \text{ bytes})$$
+        </div>
+        <div class="math-block">
+          $$\text{RawAddress} = H[12 \dots 31] \quad (\text{last } 20 \text{ bytes / } 160 \text{ bits})$$
+        </div>
+        <p style="font-size: 0.92rem; line-height: 1.6;">
+          Discarding the first 12 bytes reduces state trie storage overhead across nodes. The remaining 160 bits provide an address space of $2^{160} \approx 1.46 \times 10^{48}$ unique accounts, well beyond any realistic accidental collision threshold ($2^{80}$ via birthday bound).
+        </p>
+      </div>
+
+      <!-- PHASE 5 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <h3 style="color: var(--text-primary); font-size: 1.1rem; margin: 0;">Phase 5: EIP-55 — Mixed-Case Checksum Encoding</h3>
+          <span class="badge badge-success">Error Detection</span>
+        </div>
+
+        <div class="phase-io">
+          <div><span>Input:</span> <strong>40-character Lowercase Hex Address</strong></div>
+          <div><span>Output:</span> <strong>Mixed-Case Checksummed Address</strong></div>
+        </div>
+
+        <p style="font-size: 0.92rem; margin-top: 0.5rem;">
+          To avoid changing the 20-byte address length while preventing catastrophic typographical errors, EIP-55 embeds integrity information into the capitalization of letters ($a\text{--}f$):
+        </p>
+        <ol style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+          <li>Compute the Keccak-256 hash of the 40-character lowercase address string: $H_{\text{addr}} = \text{Keccak-256}(\text{lowercase}(\text{Address}))$.</li>
+          <li>For each character at index $i$ in the address, inspect the $i$-th nibble (4 bits) of $H_{\text{addr}}$:</li>
+        </ol>
+        <div class="math-block">
+          $$\text{Char}_i = \begin{cases}            \text{UPPERCASE}(\text{Char}_i) & \text{if } H_{\text{addr}}[i] \ge 8 \quad (\text{MSB} = 1) \\            \text{lowercase}(\text{Char}_i) & \text{if } H_{\text{addr}}[i] < 8 \quad (\text{MSB} = 0)            \end{cases}$$
+        </div>
+        <p style="font-size: 0.92rem; line-height: 1.6;">
+          Digits ($0\text{--}9$) remain unaffected. A single altered character scrambles the entire hash, producing mismatched capitalization that causes wallet clients (like MetaMask) to reject invalid destination addresses.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Interactive Wallet Pipeline -->
+    <section class="card">
+      <h2>3. Interactive Cryptographic Pipeline</h2>
+      <p>Inspect intermediate cryptographic variables in real time:</p>
+
+      <div class="input-group">
+        <label for="mnemonicInput">BIP-39 Mnemonic Phrase (12 or 24 words):</label>
+        <textarea id="mnemonicInput" style="min-height: 80px;">candy maple cake sugar pudding cream honey rich smooth crumble sweet treat</textarea>
+      </div>
+
+      <div class="control-grid" style="margin-top: 1rem;">
+        <div class="input-group">
+          <label for="derivationPath">BIP-44 Derivation Path:</label>
+          <input type="text" id="derivationPath" value="m/44'/60'/0'/0/0">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btnDerive">Execute Cryptographic Pipeline</button>
+        <button id="btnRandomMnemonic" class="secondary">Generate Random Mnemonic</button>
+      </div>
+
+      <!-- Outputs -->
+      <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">1. Binary Seed (PBKDF2-HMAC-SHA512: 512 bits / 64 bytes)</div>
+          <div class="stat-value" id="outSeed" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">2. Derived Private Key k (BIP-44: 256 bits / 32 bytes)</div>
+          <div class="stat-value" id="outPrivKey" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem; color: #f43f5e;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">3. Uncompressed Public Key Q (secp256k1: 64 bytes x||y)</div>
+          <div class="stat-value" id="outPubKey" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all;">
+          <div class="stat-label">4. Keccak-256 Digest (32 bytes / 256 bits)</div>
+          <div class="stat-value" id="outKeccak" style="font-size: 0.85rem; font-weight: normal; margin-top: 0.4rem;">-</div>
+        </div>
+
+        <div class="stat-item" style="text-align: left; word-break: break-all; border-left: 3px solid var(--accent-emerald);">
+          <div class="stat-label">5. Final Checksummed Ethereum Address (EIP-55 Mixed-Case: 20 bytes)</div>
+          <div class="stat-value" id="outAddress" style="font-size: 1.15rem; font-weight: 700; margin-top: 0.4rem; color: #10b981;">-</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Statistical Exploration -->
+    <section class="card">
+      <h2>4. Statistical Exploration: Strict Avalanche Criterion & Bit Uniformity</h2>
+      <p>
+        We empirically test two cornerstone statistical guarantees of secure cryptographic hash functions:
+      </p>
+
+      <!-- Avalanche Section -->
+      <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-top: 1.25rem; margin-bottom: 0.5rem;">
+        Test A: Strict Avalanche Criterion (SAC) via 1-Bit Entropy Inversion
+      </h3>
+      <p style="font-size: 0.92rem;">
+        Inverting exactly <strong>one single bit</strong> in the root entropy must alter approximately 50% of the bits in the derived address with zero spatial clustering:
+      </p>
+
+      <div class="btn-row">
+        <button id="btnRunAvalanche" class="secondary">Flip 1 Bit of Entropy & Measure Hamming Distance</button>
+      </div>
+
+      <div class="stats-grid" style="margin-top: 1.25rem;">
+        <div class="stat-item">
+          <div class="stat-label">Flipped Address Bits</div>
+          <div class="stat-value" id="statFlippedBits">- / 160</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Observed Mutation Rate</div>
+          <div class="stat-value" id="statFlippedPct">-%</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Theoretical Target (SAC)</div>
+          <div class="stat-value">50.0%</div>
+        </div>
+      </div>
+
+      <div class="table-container" style="margin-top: 1.25rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>Entropy Version</th>
+              <th>Derived Ethereum Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Original</strong></td>
+              <td id="tableAddrOriginal" style="color: #60a5fa;">-</td>
+            </tr>
+            <tr>
+              <td><strong>1-Bit Mutated</strong></td>
+              <td id="tableAddrMutated" style="color: #f43f5e;">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Uniformity Section -->
+      <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-top: 2rem; margin-bottom: 0.5rem;">
+        Test B: Hexadecimal Character Uniformity & Goodness-of-Fit ($\chi^2$)
+      </h3>
+      <p style="font-size: 0.92rem;">
+        Distribution of the 16 hexadecimal nibbles (<code>0</code>–<code>f</code>) across the 40-character address compared to theoretical uniform frequency ($E = 2.5$):
+      </p>
+      
+      <div class="control-grid">
+        <div class="chart-wrapper">
+          <canvas id="nibbleChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="bitParityChart"></canvas>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="margin-top: 1.25rem;">
+        <div class="stat-item">
+          <div class="stat-label">Empirical Chi-Square ($\chi^2$)</div>
+          <div class="stat-value" id="statChi2">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Degrees of Freedom ($df$)</div>
+          <div class="stat-value">15</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Critical Threshold ($\alpha = 0.05$)</div>
+          <div class="stat-value">24.996</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Chronological Context & Architectural Rationale -->
+    <section class="card">
+      <h2>5. Historical Timeline & Design Rationale</h2>
+      
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 1.5rem;">
+        <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.75rem;">Chronological Evolution of Wallet Primitives</h3>
+        <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.7;">
+          <li><strong>1977 — RSA:</strong> First practical public-key cryptosystem based on integer factorization, establishing the concept of one-way trapdoors.</li>
+          <li><strong>2001 — SHA-2 / SHA-512:</strong> Standardized by NIST using the Merkle-Damgård construction. Adopted in BIP-39 for PBKDF2 stretching.</li>
+          <li><strong>2012 — BIP-32:</strong> Pieter Wuille introduces hierarchical deterministic wallets to replace dangerous manual backups of random key pools.</li>
+          <li><strong>2013 — BIP-39:</strong> Standardizes human-readable mnemonics, replacing fragile hex strings with phonetic, typo-resistant wordlists.</li>
+          <li><strong>2014 — BIP-44:</strong> Establishes multi-account, multi-coin deterministic derivation tree paths.</li>
+          <li><strong>2015 — SHA-3 / FIPS 202:</strong> NIST standardizes Keccak with a domain separation padding shift from <code>0x01</code> to <code>0x06</code>. Because Ethereum was already live on testnet/mainnet in 2014–2015, it preserved the original <strong>Keccak-256</strong> algorithm.</li>
+          <li><strong>2016 — EIP-55:</strong> Vitalik Buterin introduces mixed-case capitalization checksums to prevent typo-driven fund losses without breaking address length.</li>
+        </ul>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.02); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <h3 style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 0.75rem;">Why Not a Single Unified Algorithm?</h3>
+        <p style="font-size: 0.92rem; line-height: 1.6;">
+          A secure wallet cannot be built from a single primitive because their core mathematical requirements are contradictory:
+        </p>
+        <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+          <li><strong>Digital Signatures require Group Homomorphism:</strong> secp256k1 preserves $(k_1 + k_2)G = k_1 G + k_2 G$, allowing ECDSA signature verification. If a hash function were homomorphic, it would be catastrophically broken.</li>
+          <li><strong>Hashing requires Total Structure Annihilation:</strong> Keccak-256 destroys all algebraic relations to guarantee collision resistance and SAC. It has no trapdoor and cannot sign transactions.</li>
+          <li><strong>Key Derivation requires Adjustable Slowness:</strong> PBKDF2 runs 2048 iterations to foil hardware brute-forcers. Using PBKDF2 inside consensus for transaction hashing would paralyze the blockchain.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. Real-World Wallet Client Experience -->
+    <section class="card">
+      <h2>6. Practical Wallet Software Context (MetaMask, Rabby, Rainbow)</h2>
+      <p>
+        When you import a 12-word recovery phrase into modern Web3 wallets like <strong>MetaMask</strong>, <strong>Rabby</strong>, <strong>Rainbow</strong>, or hardware wallets like <strong>Ledger</strong>:
+      </p>
+      <ul style="padding-left: 1.25rem; font-size: 0.92rem; line-height: 1.6;">
+        <li>The wallet performs <strong>BIP-39</strong> PBKDF2 stretching in an isolated cryptographic vault.</li>
+        <li>It derives account 0 via <strong>BIP-44</strong> path <code>m/44'/60'/0'/0/0</code>, generating private key $k$ and public key $Q$.</li>
+        <li>It computes <strong>Keccak-256</strong> over $Q$ and displays the address formatted with <strong>EIP-55</strong> checksum capitalization.</li>
+        <li>When adding "Account 2", the software does not ask for new words; it simply increments the index to <code>m/44'/60'/0'/0/1</code> deterministically.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Statistics Course — Academic Portfolio on GitHub Pages</p>
+    </footer>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
