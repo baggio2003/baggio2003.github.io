@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework 3 — Stochastic Penetration Processes (LLN & CLT)</title>
+  <link rel="stylesheet" href="../style.css?v=3">
+
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .control-group label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .control-group input,
+    .control-group select,
+    .control-group button {
+      padding: 0.55rem 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    .control-group button {
+      background-color: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: auto;
+      transition: background-color 0.2s;
+    }
+    .control-group button:hover {
+      background-color: #1d4ed8;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(37, 99, 235, 0.05);
+      border-left: 4px solid #2563eb;
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+    }
+    .canvas-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    canvas {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      border-radius: 6px;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="margin-bottom: 0.75rem;">
+        <a href="../index.html" class="btn-link" style="display: inline-block;">← Back to Portfolio</a>
+      </div>
+      <span class="badge badge-success">Assignment 4 — Homework 3</span>
+      <h1 style="margin-top: 0.75rem;">Stochastic Penetration Processes: LLN & CLT</h1>
+      <p class="subtitle">Empirical trajectory simulation of $n$ systems and $m$ attackers under Bernoulli and Rademacher increment models.</p>
+    </header>
+
+    <!-- Interactive Simulator Card -->
+    <section class="card">
+      <h2>Monte Carlo Trajectory Simulator</h2>
+      
+      <div class="controls-grid">
+        <div class="control-group">
+          <label for="modelSelect">Increment Model ($X_i$):</label>
+          <select id="modelSelect">
+            <option value="bernoulli">Bernoulli: X_i ∈ {0, 1}</option>
+            <option value="rademacher">Rademacher: X_i ∈ {-1, +1}</option>
+          </select>
+        </div>
+
+        <div class="control-group" id="probGroup">
+          <label for="probInput">Success Probability $p$:</label>
+          <input type="number" id="probInput" value="0.5" min="0.01" max="0.99" step="0.05">
+        </div>
+
+        <div class="control-group">
+          <label for="normSelect">Analyzed Quantity:</label>
+          <select id="normSelect">
+            <option value="total">Total Score: S_n</option>
+            <option value="average">Average Score: S_n / n (LLN)</option>
+            <option value="normalized">Normalized Score: S_n / √n (CLT)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="nInput">Number of Systems ($n$):</label>
+          <input type="number" id="nInput" value="500" min="10" max="5000" step="50">
+        </div>
+
+        <div class="control-group">
+          <label for="mInput">Number of Attackers ($m$):</label>
+          <input type="number" id="mInput" value="250" min="10" max="2000" step="50">
+        </div>
+
+        <div class="control-group">
+          <button id="runBtn">Run Simulation</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div><strong>Empirical Mean (at $n$):</strong> <span id="empMean">-</span></div>
+        <div><strong>Theoretical Mean (at $n$):</strong> <span id="theoMean">-</span></div>
+        <div><strong>Empirical Variance (at $n$):</strong> <span id="empVar">-</span></div>
+        <div><strong>Theoretical Variance (at $n$):</strong> <span id="theoVar">-</span></div>
+      </div>
+
+      <div class="canvas-layout">
+        <div>
+          <h3 style="margin-bottom: 0.5rem;">Sample Trajectories ($i = 1, \dots, n$)</h3>
+          <canvas id="trajCanvas" width="680" height="420"></canvas>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 0.5rem;">Terminal Distribution at Step $n$</h3>
+          <canvas id="histCanvas" width="360" height="420"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theoretical Analysis Card -->
+    <section class="card">
+      <h2>Theoretical Analysis & System Interpretation</h2>
+
+      <h3>1. Single-Step Increment Models ($X_i$)</h3>
+      <p>Each step $i \in \{1, \dots, n\}$ models an independent interaction between an attacker and the $i$-th target system:</p>
+      <ul>
+        <li><strong>Bernoulli Model ($X_i \in \{0,1\}$):</strong> Models binary compromise events with success probability $P(X_i = 1) = p$, single-step mean $\mu = p$, and variance $\sigma^2 = p(1-p)$.</li>
+        <li><strong>Rademacher Model ($X_i \in \{-1,+1\}$):</strong> Symmetric zero-mean random walk with $P(X_i = +1) = P(X_i = -1) = 1/2$, single-step mean $\mu = 0$, and unit variance $\sigma^2 = 1$.</li>
+      </ul>
+
+      <h3>2. Variance Scaling and the Law of Large Numbers (LLN)</h3>
+      <p>By independence and identical distribution of increments $X_1, \dots, X_n$, the three scaled processes exhibit distinct asymptotic regimes as $n \to \infty$:</p>
+      <ul>
+        <li><strong>Total Score ($S_n = \sum_{i=1}^n X_i$):</strong> $\mathbb{E}[S_n] = n\mu$ and $\text{Var}(S_n) = n\sigma^2$. The variance grows linearly with $n$, causing the trajectory bundle to widen indefinitely ($\text{SD}(S_n) = \sigma\sqrt{n}$).</li>
+        <li><strong>Average Score ($S_n / n$):</strong> $\mathbb{E}[S_n/n] = \mu$ and $\text{Var}(S_n/n) = \sigma^2 / n \to 0$. By the <strong>Weak Law of Large Numbers</strong>, the sample average converges in probability to the true mean:
+          $$\frac{S_n}{n} \xrightarrow{P} \mu \quad \text{as } n \to \infty$$
+          Visually, the trajectory bundle funnels tightly onto the dashed horizontal line $y = \mu$, and the terminal histogram collapses into a degenerate spike (Dirac delta) at $\mu$.</li>
+        <li><strong>Normalized Score ($S_n / \sqrt{n}$):</strong> $\mathbb{E}[S_n/\sqrt{n}] = \sqrt{n}\mu$ and $\text{Var}(S_n/\sqrt{n}) = \sigma^2$. Scaling by $1/\sqrt{n}$ exactly stabilizes the dispersion, keeping the variance constant for all $n$.</li>
+      </ul>
+
+      <h3>3. Central Limit Theorem (CLT) in the Rademacher Case</h3>
+      <p>In the symmetric Rademacher model ($\mu = 0, \sigma^2 = 1$), the normalized sum $S_n / \sqrt{n}$ is already centered with unit variance. By the <strong>Lindeberg–Lévy Central Limit Theorem</strong>:</p>
+      <p style="text-align: center; margin: 1rem 0;">
+        $$\frac{S_n}{\sqrt{n}} = \frac{1}{\sqrt{n}}\sum_{i=1}^n X_i \xrightarrow{d} \mathcal{N}(0, 1) \quad \text{as } n \to \infty$$
+      </p>
+      <p>When selecting <em>Rademacher</em> and <em>Normalized Score</em>, the red curve on the terminal histogram overlays the exact standard normal density $\phi(z) = \frac{1}{\sqrt{2\pi}}e^{-z^2/2}$, demonstrating empirical convergence in distribution.</p>
+
+      <h3>4. Security Interpretation: $n$ Systems and $m$ Attackers</h3>
+      <ul>
+        <li><strong>Effect of System Size ($n$):</strong> Represents the depth or number of assets in the infrastructure. As $n$ increases, the average compromise rate per system ($S_n/n$) stabilizes around $p$ (LLN), making the <em>expected proportion</em> of breached systems highly predictable for risk assessment. However, the absolute spread of breached systems ($S_n$) scales as $\sqrt{n}$, meaning absolute uncertainty grows with infrastructure size.</li>
+        <li><strong>Effect of Number of Attackers ($m$):</strong> Represents the number of independent adversarial campaigns (Monte Carlo sample paths). While $n$ governs the asymptotic law of the stochastic process, $m$ governs empirical resolution: a larger $m$ populates the tails of the distribution, increasing the probability that at least one outlier attacker achieves an extreme penetration score ($\max_{1 \le j \le m} S_n^{(j)}$).</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Statistics Course — Academic Portfolio on GitHub Pages</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
