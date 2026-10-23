@@ -17,7 +17,7 @@
   <style>
     .controls-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
@@ -28,44 +28,35 @@
     }
     .control-group label {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
     .control-group input,
     .control-group select,
     .control-group button {
-      padding: 0.55rem 0.75rem;
+      padding: 0.55rem 0.7rem;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
-    .control-group button {
+    .btn-primary {
       background-color: #2563eb;
       color: #fff;
-      border: none;
+      border: none !important;
       cursor: pointer;
       font-weight: 600;
       margin-top: auto;
       transition: background-color 0.2s;
     }
-    .control-group button:hover {
+    .btn-primary:hover {
       background-color: #1d4ed8;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      padding: 1rem;
-      background: rgba(37, 99, 235, 0.05);
-      border-left: 4px solid #2563eb;
-      border-radius: 4px;
-      margin-bottom: 1.5rem;
     }
     .canvas-layout {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
+      gap: 1.25rem;
       justify-content: center;
       align-items: flex-start;
+      margin-bottom: 1.5rem;
     }
     canvas {
       border: 1px solid #e2e8f0;
@@ -73,6 +64,44 @@
       border-radius: 6px;
       max-width: 100%;
       height: auto;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem 0;
+      font-size: 0.92rem;
+    }
+    .comparison-table th,
+    .comparison-table td {
+      border: 1px solid var(--border-subtle);
+      padding: 0.65rem 0.85rem;
+      text-align: center;
+    }
+    .comparison-table th {
+      background: rgba(22, 28, 45, 0.95);
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+    .comparison-table tr.active-row td {
+      background: rgba(99, 102, 241, 0.15);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .metrics-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(37, 99, 235, 0.05);
+      border-left: 4px solid #2563eb;
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+      font-size: 0.93rem;
+    }
+    .legend-inline {
+      font-size: 0.85rem;
+      color: #475569;
+      margin-top: 0.35rem;
     }
   </style>
 </head>
@@ -84,13 +113,16 @@
       </div>
       <span class="badge badge-success">Assignment 4 — Homework 3</span>
       <h1 style="margin-top: 0.75rem;">Stochastic Penetration Processes: LLN & CLT</h1>
-      <p class="subtitle">Empirical trajectory simulation of $n$ systems and $m$ attackers under Bernoulli and Rademacher increment models.</p>
+      <p class="subtitle">Trajectory simulation and asymptotic analysis of $n$ systems and $m$ attackers under Bernoulli and Rademacher increment models.</p>
     </header>
 
     <!-- Interactive Simulator Card -->
     <section class="card">
-      <h2>Monte Carlo Trajectory Simulator</h2>
-      
+      <h2>1. Monte Carlo Trajectory & Distribution Simulator</h2>
+      <p style="margin-bottom: 1rem; font-size: 0.95rem;">
+        All three quantities ($S_n$, $S_n/n$, $S_n/\sqrt{n}$) are computed simultaneously on the exact same sample paths. Switching the <em>Displayed Quantity</em> or adjusting $\varepsilon$ updates the view on the current dataset without losing the trajectories; click <strong>Generate New Paths</strong> for a new Monte Carlo sample.
+      </p>
+
       <div class="controls-grid">
         <div class="control-group">
           <label for="modelSelect">Increment Model ($X_i$):</label>
@@ -101,12 +133,12 @@
         </div>
 
         <div class="control-group" id="probGroup">
-          <label for="probInput">Success Probability $p$:</label>
-          <input type="number" id="probInput" value="0.5" min="0.01" max="0.99" step="0.05">
+          <label for="probInput">Success Prob. $p$ (Bernoulli):</label>
+          <input type="number" id="probInput" value="0.5" min="0.05" max="0.95" step="0.05">
         </div>
 
         <div class="control-group">
-          <label for="normSelect">Analyzed Quantity:</label>
+          <label for="normSelect">Displayed Quantity:</label>
           <select id="normSelect">
             <option value="total">Total Score: S_n</option>
             <option value="average">Average Score: S_n / n (LLN)</option>
@@ -115,71 +147,192 @@
         </div>
 
         <div class="control-group">
-          <label for="nInput">Number of Systems ($n$):</label>
-          <input type="number" id="nInput" value="500" min="10" max="5000" step="50">
+          <label for="nInput">Systems ($n$):</label>
+          <input type="number" id="nInput" value="600" min="20" max="5000" step="50">
         </div>
 
         <div class="control-group">
-          <label for="mInput">Number of Attackers ($m$):</label>
-          <input type="number" id="mInput" value="250" min="10" max="2000" step="50">
+          <label for="mInput">Attackers ($m$):</label>
+          <input type="number" id="mInput" value="300" min="20" max="2000" step="50">
         </div>
 
         <div class="control-group">
-          <button id="runBtn">Run Simulation</button>
+          <label for="epsInput">LLN Tolerance ($\varepsilon$):</label>
+          <input type="number" id="epsInput" value="0.05" min="0.01" max="0.30" step="0.01">
+        </div>
+
+        <div class="control-group">
+          <button id="runBtn" class="btn-primary">Generate New Paths</button>
         </div>
       </div>
 
-      <div class="stats-grid">
-        <div><strong>Empirical Mean (at $n$):</strong> <span id="empMean">-</span></div>
-        <div><strong>Theoretical Mean (at $n$):</strong> <span id="theoMean">-</span></div>
-        <div><strong>Empirical Variance (at $n$):</strong> <span id="empVar">-</span></div>
-        <div><strong>Theoretical Variance (at $n$):</strong> <span id="theoVar">-</span></div>
+      <!-- Simultaneous Comparison Table across all 3 quantities -->
+      <h3>Simultaneous Comparison at Terminal Step $n$ (Same Sample Paths)</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Quantity</th>
+            <th>Formula</th>
+            <th>Empirical Mean</th>
+            <th>Theoretical Mean</th>
+            <th>Empirical Variance</th>
+            <th>Theoretical Variance</th>
+            <th>Asymptotic Variance ($n \to \infty$)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-total">
+            <td><strong>Total Score</strong></td>
+            <td>$S_n = \sum_{i=1}^n X_i$</td>
+            <td id="empMeanTotal">-</td>
+            <td id="theoMeanTotal">-</td>
+            <td id="empVarTotal">-</td>
+            <td id="theoVarTotal">-</td>
+            <td>$\mathcal{O}(n) \to \infty$ (Diverges)</td>
+          </tr>
+          <tr id="row-average">
+            <td><strong>Average Score (LLN)</strong></td>
+            <td>$S_n / n = \frac{1}{n}\sum_{i=1}^n X_i$</td>
+            <td id="empMeanAvg">-</td>
+            <td id="theoMeanAvg">-</td>
+            <td id="empVarAvg">-</td>
+            <td id="theoVarAvg">-</td>
+            <td>$\mathcal{O}(1/n) \to 0$ (Vanishes)</td>
+          </tr>
+          <tr id="row-normalized">
+            <td><strong>Normalized Score (CLT)</strong></td>
+            <td>$S_n / \sqrt{n} = \frac{1}{\sqrt{n}}\sum_{i=1}^n X_i$</td>
+            <td id="empMeanNorm">-</td>
+            <td id="theoMeanNorm">-</td>
+            <td id="empVarNorm">-</td>
+            <td id="theoVarNorm">-</td>
+            <td>$\sigma^2 = \text{const}$ (Stabilized)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="metrics-banner">
+        <div>
+          <strong>LLN Convergence in Probability:</strong><br>
+          $\hat{P}(|S_n/n - \mu| \lt \varepsilon) =$ <span id="llnProbVal" style="font-weight:700; color:#1d4ed8;">-</span>
+          <span id="chebyshevBound" style="display:block; font-size:0.82rem; color:#64748b;">Chebyshev lower bound: -</span>
+        </div>
+        <div>
+          <strong>CLT Standard Normal Fit ($\mathcal{N}(0,1)$):</strong><br>
+          KS Distance $D_n = \sup_z |\hat{F}_n(z) - \Phi(z)| =$ <span id="cltKsVal" style="font-weight:700; color:#dc2626;">-</span>
+          <span id="cltNote" style="display:block; font-size:0.82rem; color:#64748b;">-</span>
+        </div>
+        <div>
+          <strong>Aggregate Penetration Spread at $n$:</strong><br>
+          Min / Max Observed: <span id="minMaxVal" style="font-weight:700;">-</span>
+          <span style="display:block; font-size:0.82rem; color:#64748b;">Across $m$ independent attackers</span>
+        </div>
       </div>
 
+      <!-- Main Trajectory & Terminal Histogram Canvases -->
       <div class="canvas-layout">
         <div>
-          <h3 style="margin-bottom: 0.5rem;">Sample Trajectories ($i = 1, \dots, n$)</h3>
-          <canvas id="trajCanvas" width="680" height="420"></canvas>
+          <h3 style="margin-bottom: 0.4rem;">Sample Trajectories ($i = 1, \dots, n$)</h3>
+          <canvas id="trajCanvas" width="660" height="400"></canvas>
+          <div class="legend-inline">
+            <span style="color:#dc2626; font-weight:bold;">— —</span> Theoretical Mean &nbsp;|&nbsp;
+            <span style="color:#0f766e; font-weight:bold;">- - -</span> Theoretical $\pm 1\,\text{SD}$ Envelope &nbsp;|&nbsp;
+            <span style="color:#7c3aed; font-weight:bold;">···</span> LLN Tube $\mu \pm \varepsilon$ (on $S_n/n$)
+          </div>
         </div>
         <div>
-          <h3 style="margin-bottom: 0.5rem;">Terminal Distribution at Step $n$</h3>
-          <canvas id="histCanvas" width="360" height="420"></canvas>
+          <h3 style="margin-bottom: 0.4rem;">Distribution at Step $n$ vs Step $n/5$</h3>
+          <canvas id="histCanvas" width="380" height="400"></canvas>
+          <div class="legend-inline">
+            <span style="color:#2563eb; font-weight:bold;">■</span> Step $n$ &nbsp;|&nbsp;
+            <span style="color:#94a3b8; font-weight:bold;">■</span> Early Step $n/5$ &nbsp;|&nbsp;
+            <span style="color:#dc2626; font-weight:bold;">—</span> Theoretical Gaussian PDF
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Theoretical Analysis Card -->
+    <!-- Variance & Convergence Dynamics as n Increases -->
     <section class="card">
-      <h2>Theoretical Analysis & System Interpretation</h2>
-
-      <h3>1. Single-Step Increment Models ($X_i$)</h3>
-      <p>Each step $i \in \{1, \dots, n\}$ models an independent interaction between an attacker and the $i$-th target system:</p>
-      <ul>
-        <li><strong>Bernoulli Model ($X_i \in \{0,1\}$):</strong> Models binary compromise events with success probability $P(X_i = 1) = p$, single-step mean $\mu = p$, and variance $\sigma^2 = p(1-p)$.</li>
-        <li><strong>Rademacher Model ($X_i \in \{-1,+1\}$):</strong> Symmetric zero-mean random walk with $P(X_i = +1) = P(X_i = -1) = 1/2$, single-step mean $\mu = 0$, and unit variance $\sigma^2 = 1$.</li>
-      </ul>
-
-      <h3>2. Variance Scaling and the Law of Large Numbers (LLN)</h3>
-      <p>By independence and identical distribution of increments $X_1, \dots, X_n$, the three scaled processes exhibit distinct asymptotic regimes as $n \to \infty$:</p>
-      <ul>
-        <li><strong>Total Score ($S_n = \sum_{i=1}^n X_i$):</strong> $\mathbb{E}[S_n] = n\mu$ and $\text{Var}(S_n) = n\sigma^2$. The variance grows linearly with $n$, causing the trajectory bundle to widen indefinitely ($\text{SD}(S_n) = \sigma\sqrt{n}$).</li>
-        <li><strong>Average Score ($S_n / n$):</strong> $\mathbb{E}[S_n/n] = \mu$ and $\text{Var}(S_n/n) = \sigma^2 / n \to 0$. By the <strong>Weak Law of Large Numbers</strong>, the sample average converges in probability to the true mean:
-          $$\frac{S_n}{n} \xrightarrow{P} \mu \quad \text{as } n \to \infty$$
-          Visually, the trajectory bundle funnels tightly onto the dashed horizontal line $y = \mu$, and the terminal histogram collapses into a degenerate spike (Dirac delta) at $\mu$.</li>
-        <li><strong>Normalized Score ($S_n / \sqrt{n}$):</strong> $\mathbb{E}[S_n/\sqrt{n}] = \sqrt{n}\mu$ and $\text{Var}(S_n/\sqrt{n}) = \sigma^2$. Scaling by $1/\sqrt{n}$ exactly stabilizes the dispersion, keeping the variance constant for all $n$.</li>
-      </ul>
-
-      <h3>3. Central Limit Theorem (CLT) in the Rademacher Case</h3>
-      <p>In the symmetric Rademacher model ($\mu = 0, \sigma^2 = 1$), the normalized sum $S_n / \sqrt{n}$ is already centered with unit variance. By the <strong>Lindeberg–Lévy Central Limit Theorem</strong>:</p>
-      <p style="text-align: center; margin: 1rem 0;">
-        $$\frac{S_n}{\sqrt{n}} = \frac{1}{\sqrt{n}}\sum_{i=1}^n X_i \xrightarrow{d} \mathcal{N}(0, 1) \quad \text{as } n \to \infty$$
+      <h2>2. Asymptotic Behavior as $n$ Increases (Variance, LLN & CLT)</h2>
+      <p style="margin-bottom: 1rem; font-size: 0.95rem;">
+        To directly observe how the system size $i \in \{1, \dots, n\}$ drives the three normalizations, the left chart tracks the empirical and theoretical <strong>variance</strong> under all three scalings simultaneously, while the right chart tracks the <strong>LLN probability inside $[\mu-\varepsilon, \mu+\varepsilon]$</strong> and the <strong>CLT Kolmogorov-Smirnov distance</strong> to $\mathcal{N}(0,1)$.
       </p>
-      <p>When selecting <em>Rademacher</em> and <em>Normalized Score</em>, the red curve on the terminal histogram overlays the exact standard normal density $\phi(z) = \frac{1}{\sqrt{2\pi}}e^{-z^2/2}$, demonstrating empirical convergence in distribution.</p>
 
-      <h3>4. Security Interpretation: $n$ Systems and $m$ Attackers</h3>
+      <div class="canvas-layout">
+        <div>
+          <h3 style="margin-bottom: 0.4rem;">Variance Scaling Across Step $i = 1, \dots, n$</h3>
+          <canvas id="varCanvas" width="520" height="340"></canvas>
+          <div class="legend-inline">
+            <span style="color:#ea580c; font-weight:bold;">—</span> $\text{Var}(S_i)/n$ (Linear growth $\propto i$) &nbsp;|&nbsp;
+            <span style="color:#16a34a; font-weight:bold;">—</span> $\text{Var}(S_i/\sqrt{i})$ (Constant $\sigma^2$) &nbsp;|&nbsp;
+            <span style="color:#2563eb; font-weight:bold;">—</span> $\text{Var}(S_i/i)$ (Decays $\propto 1/i \to 0$)
+          </div>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 0.4rem;">LLN & CLT Convergence Across Step $i = 1, \dots, n$</h3>
+          <canvas id="convCanvas" width="520" height="340"></canvas>
+          <div class="legend-inline">
+            <span style="color:#2563eb; font-weight:bold;">—</span> LLN: $\hat{P}(|S_i/i - \mu| \lt \varepsilon) \to 1$ &nbsp;|&nbsp;
+            <span style="color:#dc2626; font-weight:bold;">—</span> CLT: KS Distance $\sup_z |\hat{F}_i(z) - \Phi(z)| \to 0$
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theoretical Analysis & System Interpretation -->
+    <section class="card">
+      <h2>3. Theoretical Analysis & Cybersecurity Interpretation</h2>
+
+      <h3>3.1 Stochastic Increment Models ($X_i$)</h3>
+      <p>Let $X_1, X_2, \dots, X_n$ be independent and identically distributed (i.i.d.) random variables representing the penetration score at each system $i \in \{1, \dots, n\}$:</p>
       <ul>
-        <li><strong>Effect of System Size ($n$):</strong> Represents the depth or number of assets in the infrastructure. As $n$ increases, the average compromise rate per system ($S_n/n$) stabilizes around $p$ (LLN), making the <em>expected proportion</em> of breached systems highly predictable for risk assessment. However, the absolute spread of breached systems ($S_n$) scales as $\sqrt{n}$, meaning absolute uncertainty grows with infrastructure size.</li>
-        <li><strong>Effect of Number of Attackers ($m$):</strong> Represents the number of independent adversarial campaigns (Monte Carlo sample paths). While $n$ governs the asymptotic law of the stochastic process, $m$ governs empirical resolution: a larger $m$ populates the tails of the distribution, increasing the probability that at least one outlier attacker achieves an extreme penetration score ($\max_{1 \le j \le m} S_n^{(j)}$).</li>
+        <li><strong>Bernoulli Model ($X_i \in \{0,1\}$):</strong> Models binary intrusion outcomes where system $i$ is compromised with probability $P(X_i = 1) = p$ and resists with $P(X_i = 0) = 1-p$. The single-step mean and variance are:
+          $$\mu = \mathbb{E}[X_i] = p, \qquad \sigma^2 = \text{Var}(X_i) = p(1-p)$$</li>
+        <li><strong>Rademacher Model ($X_i \in \{-1,+1\}$):</strong> Models a symmetric zero-mean tug-of-war between attacker and defender (e.g., gaining $+1$ privilege level vs. losing $-1$ via detection/remediation) with $P(X_i = +1) = P(X_i = -1) = 1/2$. The single-step moments are:
+          $$\mu = \mathbb{E}[X_i] = (+1)\frac{1}{2} + (-1)\frac{1}{2} = 0, \qquad \sigma^2 = \text{Var}(X_i) = \mathbb{E}[X_i^2] - 0^2 = 1$$</li>
+      </ul>
+
+      <h3>3.2 Comparison of the Three Quantities & Variance Behavior as $n$ Increases</h3>
+      <p>For any linear scaling $Y_n = c_n S_n = c_n \sum_{i=1}^n X_i$, independence yields $\mathbb{E}[Y_n] = c_n n \mu$ and $\text{Var}(Y_n) = c_n^2 n \sigma^2$:</p>
+      <ul>
+        <li><strong>Total Score ($S_n = \sum_{i=1}^n X_i$, $c_n = 1$):</strong>
+          $$\mathbb{E}[S_n] = n\mu, \qquad \text{Var}(S_n) = n\sigma^2 \xrightarrow{n\to\infty} \infty$$
+          In the Bernoulli case, $S_n \sim \text{Binomial}(n, p)$ drifts upward linearly with slope $p$; in the Rademacher case, $S_n$ is a symmetric 1D random walk centered at $0$. In both models, the variance grows linearly with $n$ (standard deviation $\propto \sqrt{n}$), causing the trajectory cone to widen without bound.</li>
+        <li><strong>Average Score ($S_n / n$, $c_n = 1/n$):</strong>
+          $$\mathbb{E}\left[\frac{S_n}{n}\right] = \mu, \qquad \text{Var}\left(\frac{S_n}{n}\right) = \frac{n\sigma^2}{n^2} = \frac{\sigma^2}{n} \xrightarrow{n\to\infty} 0$$
+          Dividing by $n$ over-stabilizes the fluctuations: the variance decays hyperbolically at rate $1/n$. By Chebyshev's inequality, for every $\varepsilon \gt 0$:
+          $$P\left(\left|\frac{S_n}{n} - \mu\right| \ge \varepsilon\right) \le \frac{\text{Var}(S_n/n)}{\varepsilon^2} = \frac{\sigma^2}{n\varepsilon^2} \xrightarrow{n\to\infty} 0$$
+          confirming the <strong>Weak Law of Large Numbers (LLN)</strong>: $S_n/n \xrightarrow{P} \mu$ (convergence in probability to a deterministic constant).</li>
+        <li><strong>Normalized Total Score ($S_n / \sqrt{n}$, $c_n = 1/\sqrt{n}$):</strong>
+          $$\mathbb{E}\left[\frac{S_n}{\sqrt{n}}\right] = \sqrt{n}\,\mu, \qquad \text{Var}\left(\frac{S_n}{\sqrt{n}}\right) = \frac{n\sigma^2}{(\sqrt{n})^2} = \sigma^2 = \text{constant}$$
+          Scaling by $1/\sqrt{n}$ is the exact critical exponent that keeps the variance constant and non-degenerate ($\sigma^2 \gt 0$) for all $n$. Note that in the Bernoulli case ($\mu = p \gt 0$), the mean $\sqrt{n}\,p$ still drifts to $+\infty$ at rate $\sqrt{n}$, whereas in the zero-mean Rademacher case ($\mu = 0$), both the mean ($0$) and variance ($1$) remain completely invariant with respect to $n$.</li>
+      </ul>
+
+      <h3>3.3 Central Limit Theorem (CLT) in the Rademacher Case</h3>
+      <p>By the <strong>Lindeberg–Lévy Central Limit Theorem</strong>, for i.i.d. increments with finite mean $\mu$ and variance $\sigma^2 \in (0, \infty)$, the standardized sum converges in distribution to a standard normal variable:</p>
+      <p style="text-align: center;">
+        $$Z_n = \frac{S_n - n\mu}{\sigma\sqrt{n}} \xrightarrow{d} \mathcal{N}(0, 1) \quad \text{as } n \to \infty$$
+      </p>
+      <p>In the <strong>Rademacher model</strong>, since $\mu = 0$ and $\sigma = 1$, the standardized variable $Z_n$ coincides directly with the uncentered normalized score $S_n / \sqrt{n}$:</p>
+      <p style="text-align: center;">
+        $$\frac{S_n}{\sqrt{n}} = \frac{1}{\sqrt{n}}\sum_{i=1}^n X_i \xrightarrow{d} \mathcal{N}(0, 1), \qquad \lim_{n\to\infty} P\left(\frac{S_n}{\sqrt{n}} \le z\right) = \Phi(z) = \int_{-\infty}^z \frac{1}{\sqrt{2\pi}}e^{-u^2/2}\,du$$
+      </p>
+      <p>As shown in the simulator when selecting <em>Rademacher + Normalized Score</em>, while at early steps ($n/5$, gray histogram) the distribution is visibly discrete and coarse, by step $n$ (blue histogram) the empirical distribution closely matches the red $\mathcal{N}(0,1)$ bell curve, and the Kolmogorov-Smirnov distance $D_n$ decays at the Berry–Esseen rate $\mathcal{O}(1/\sqrt{n})$.</p>
+
+      <h3>3.4 Context Interpretation: $n$ Systems and $m$ Attackers</h3>
+      <ul>
+        <li><strong>Role of System Size ($n$ — Infrastructure Scale):</strong> $n$ represents the number of defensive layers, hosts, or sequential targets evaluated during an intrusion campaign.
+          <ul>
+            <li><em>Macroscopic Predictability (LLN):</em> In a large enterprise network ($n \gg 1$), the <strong>fraction</strong> of compromised systems $S_n/n$ converges tightly to the single-system vulnerability rate $p$. Security architects can therefore reliably estimate the average breach ratio $p$ and budget baseline remediation capacity.</li>
+            <li><em>Absolute Risk Dispersion ($\sqrt{n}$ Scaling):</em> Even though the relative rate $S_n/n$ stabilizes, the absolute number of compromised systems $S_n$ fluctuates around $np$ with standard deviation $\sqrt{n\,p(1-p)}$ (or $\sqrt{n}$ in the Rademacher model). Thus, worst-case absolute damage grows on the order of $\mathcal{O}(\sqrt{n})$.</li>
+          </ul>
+        </li>
+        <li><strong>Role of Number of Attackers ($m$ — Adversarial Population):</strong> $m$ represents the number of independent threat actors or parallel penetration attempts targeting the infrastructure.
+          <ul>
+            <li><em>Empirical Convergence vs. Tail Exposure:</em> Statistically, $m$ is the Monte Carlo sample size (By the Glivenko–Cantelli theorem, as $m \to \infty$, the empirical histogram converges to the true theoretical distribution at step $n$). Operationally, security is often governed by the <strong>most successful attacker</strong> $\max_{1 \le j \le m} S_n^{(j)}$: as $m$ increases, the probability that at least one attacker samples the upper tail ($S_n \ge n\mu + k\sigma\sqrt{n}$) approaches $1$. A system defender must therefore provision defenses not just for the mean attacker ($n\mu$), but for the upper quantiles predicted by the Gaussian CLT tail ($n\mu + z_{1-\alpha}\sigma\sqrt{n}$).</li>
+          </ul>
+        </li>
       </ul>
     </section>
 
