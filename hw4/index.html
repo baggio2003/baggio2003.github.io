@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welford's Recurrence & Sampling Distributions | Statistics Lab</title>
+    <link rel="stylesheet" href="../style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.6rem;
+        }
+        .derivation-box {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 4px solid #38bdf8;
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .derivation-box.accent-purple {
+            border-left-color: #a855f7;
+        }
+        .derivation-box.accent-emerald {
+            border-left-color: #10b981;
+        }
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 1.2rem;
+            margin: 1rem 0;
+        }
+        .code-showcase {
+            background: #090d16;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.6rem;
+            padding: 1.15rem 1.35rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 0;
+        }
+        .code-showcase .comment { color: #64748b; }
+        .code-showcase .keyword { color: #c084fc; }
+        .code-showcase .core-line {
+            display: block;
+            background: rgba(16, 185, 129, 0.12);
+            border-left: 3px solid #10b981;
+            padding-left: 0.65rem;
+            margin: 0.15rem -0.5rem;
+            color: #ecfdf5;
+            font-weight: 600;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.25rem;
+        }
+        .charts-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.25rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        .chart-wrapper-wide {
+            position: relative;
+            height: 360px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1.2rem;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: right;
+        }
+        .data-table th, .data-table td {
+            padding: 0.7rem 0.95rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+        }
+        .data-table th {
+            text-align: right;
+            color: #38bdf8;
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .data-table th:first-child, .data-table td:first-child {
+            text-align: left;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .data-table tr:hover {
+            background: rgba(56, 189, 248, 0.05);
+        }
+        .mono-seq {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: left !important;
+        }
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
+        }
+        .theory-card {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.6rem;
+            padding: 1.2rem;
+        }
+        .theory-card h4 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #38bdf8;
+        }
+        .btn-secondary {
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            color: #e9d5ff;
+            padding: 0.65rem 1.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(168, 85, 247, 0.35);
+        }
+        @media (max-width: 640px) {
+            .charts-two-col, .code-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <a href="../index.html" class="back-link">&larr; Back to Portfolio</a>
+            <h1>Welford’s Recurrence &amp; Sampling Distributions</h1>
+            <p>Ex. 1: Knuth/Welford Derivation &amp; 3-Line Code &bull; Ex. 2: $m \times n$ Penetration Scoring &amp; Estimator Asymptotics</p>
+        </header>
+
+        <!-- ==================== EXERCISE 1 ==================== -->
+        <section class="card">
+            <span class="section-badge">Exercise 1</span>
+            <h2>Welford’s Recurrence Formulas for $SS$ and Variance</h2>
+            <p>
+                Standard two-pass variance computation requires keeping all observations in memory, whereas the naive one-pass formula
+                $\hat{\sigma}_k^2 = \frac{1}{k}\sum_{i=1}^k x_i^2 - \bar{x}_k^2$ suffers from severe <strong>catastrophic cancellation</strong> in floating-point arithmetic whenever $\sigma \ll |\mu|$.
+                Following the same recursive isolation technique used by <strong>D. E. Knuth</strong> for the sample mean, we derive <strong>B. P. Welford’s (1962)</strong> recurrence relations for the sum of squared deviations ($SS_k$) and the variance ($s_k^2$ and $\hat{\sigma}_k^2$).
+            </p>
+
+            <!-- Step 1: Knuth's Mean Recurrence -->
+            <div class="derivation-box">
+                <h3>1. Knuth’s Recurrence Approach for the Mean ($\bar{x}_k$)</h3>
+                <p>Given $k$ observations $x_1, \dots, x_k$, isolate the newly arrived $x_k$ from the previous $k-1$ terms and substitute $\sum_{i=1}^{k-1} x_i = (k-1)\bar{x}_{k-1}$:</p>
+                $$
+                \bar{x}_k = \frac{1}{k}\sum_{i=1}^k x_i
+                = \frac{1}{k}\left(\sum_{i=1}^{k-1} x_i + x_k\right)
+                = \frac{(k-1)\bar{x}_{k-1} + x_k}{k}
+                = \frac{k\bar{x}_{k-1} - \bar{x}_{k-1} + x_k}{k}
+                $$
+                $$
+                \implies \boxed{\bar{x}_k = \bar{x}_{k-1} + \frac{x_k - \bar{x}_{k-1}}{k}}
+                $$
+                <p>
+                    Let $\delta_k = x_k - \bar{x}_{k-1}$ denote the pre-update deviation and $\delta'_k = x_k - \bar{x}_k$ the post-update deviation. Using $\bar{x}_k - \bar{x}_{k-1} = \frac{\delta_k}{k}$, we immediately obtain the key identity linking the two deviations:
+                </p>
+                $$
+                x_k - \bar{x}_k = (x_k - \bar{x}_{k-1}) - (\bar{x}_k - \bar{x}_{k-1})
+                = \delta_k - \frac{\delta_k}{k}
+                = \frac{k-1}{k}(x_k - \bar{x}_{k-1})
+                = (k-1)(\bar{x}_k - \bar{x}_{k-1})
+                $$
+            </div>
+
+            <!-- Step 2: Welford's Sum of Squares SS_k -->
+            <div class="derivation-box accent-purple">
+                <h3>2. Derivation of Welford’s Recurrence for the Sum of Squares ($SS_k$)</h3>
+                <p>Define $SS_k = \sum_{i=1}^k (x_i - \bar{x}_k)^2$. Following Knuth’s approach, separate the $k$-th term and add/subtract the old mean $\bar{x}_{k-1}$ inside the summation over $i = 1, \dots, k-1$:</p>
+                $$
+                SS_k = \sum_{i=1}^{k-1} (x_i - \bar{x}_k)^2 + (x_k - \bar{x}_k)^2
+                = \sum_{i=1}^{k-1} \Big[(x_i - \bar{x}_{k-1}) - (\bar{x}_k - \bar{x}_{k-1})\Big]^2 + (x_k - \bar{x}_k)^2
+                $$
+                <p>Expand the square across the first $k-1$ terms:</p>
+                $$
+                SS_k = \underbrace{\sum_{i=1}^{k-1} (x_i - \bar{x}_{k-1})^2}_{=\,SS_{k-1}}
+                -\, 2(\bar{x}_k - \bar{x}_{k-1})\underbrace{\sum_{i=1}^{k-1} (x_i - \bar{x}_{k-1})}_{=\,0}
+                +\, (k-1)(\bar{x}_k - \bar{x}_{k-1})^2 + (x_k - \bar{x}_k)^2
+                $$
+                <p>
+                    Since $\sum_{i=1}^{k-1}(x_i - \bar{x}_{k-1}) = (k-1)\bar{x}_{k-1} - (k-1)\bar{x}_{k-1} = 0$, the cross-term vanishes identically.
+                    Now substitute the identity $(k-1)(\bar{x}_k - \bar{x}_{k-1}) = (x_k - \bar{x}_k)$ from Step 1 into $(k-1)(\bar{x}_k - \bar{x}_{k-1})^2$:
+                </p>
+                $$
+                SS_k = SS_{k-1} + (x_k - \bar{x}_k)(\bar{x}_k - \bar{x}_{k-1}) + (x_k - \bar{x}_k)^2
+                $$
+                <p>Factor out $(x_k - \bar{x}_k)$ from the last two terms and simplify $\big[(\bar{x}_k - \bar{x}_{k-1}) + (x_k - \bar{x}_k)\big] = (x_k - \bar{x}_{k-1})$:</p>
+                $$
+                \boxed{SS_k = SS_{k-1} + (x_k - \bar{x}_{k-1})(x_k - \bar{x}_k) = SS_{k-1} + \frac{k-1}{k}(x_k - \bar{x}_{k-1})^2}
+                $$
+            </div>
+
+            <!-- Step 3: Derivation of the Variance Recurrence -->
+            <div class="derivation-box accent-emerald">
+                <h3>3. Derivation of Welford’s Recurrence for the Variance ($s_k^2$ and $\hat{\sigma}_k^2$)</h3>
+                <p>We apply the same recursive substitution to express the variance at step $k$ as the variance at step $k-1$ plus a correction term:</p>
+
+                <p><strong>(a) Unbiased Sample Variance $s_k^2 = \frac{SS_k}{k-1}$ (for $k \ge 2$, with $s_1^2 = 0$):</strong></p>
+                <p>Substitute $SS_k = (k-1)s_k^2$ and $SS_{k-1} = (k-2)s_{k-1}^2$ into Welford’s $SS_k$ recurrence:</p>
+                $$
+                (k-1)s_k^2 = (k-2)s_{k-1}^2 + (x_k - \bar{x}_{k-1})(x_k - \bar{x}_k)
+                = (k-2)s_{k-1}^2 + \frac{k-1}{k}(x_k - \bar{x}_{k-1})^2
+                $$
+                <p>Dividing both sides by $k-1$ and rewriting $\frac{k-2}{k-1}s_{k-1}^2 = s_{k-1}^2 - \frac{s_{k-1}^2}{k-1}$ yields the exact Knuth-style update:</p>
+                $$
+                \boxed{s_k^2 = \frac{k-2}{k-1}s_{k-1}^2 + \frac{(x_k - \bar{x}_{k-1})^2}{k} = s_{k-1}^2 + \frac{(x_k - \bar{x}_{k-1})(x_k - \bar{x}_k) - s_{k-1}^2}{k-1}}
+                $$
+
+                <p><strong>(b) Biased / Population Sample Variance $\hat{\sigma}_k^2 = \frac{SS_k}{k}$ (for $k \ge 1$):</strong></p>
+                <p>Substitute $SS_k = k\hat{\sigma}_k^2$ and $SS_{k-1} = (k-1)\hat{\sigma}_{k-1}^2$ and divide by $k$:</p>
+                $$
+                \boxed{\hat{\sigma}_k^2 = \frac{k-1}{k}\hat{\sigma}_{k-1}^2 + \frac{(x_k - \bar{x}_{k-1})(x_k - \bar{x}_k)}{k} = \hat{\sigma}_{k-1}^2 + \frac{(x_k - \bar{x}_{k-1})(x_k - \bar{x}_k) - \hat{\sigma}_{k-1}^2}{k}}
+                $$
+            </div>
+
+            <!-- 3-Line Code Implementation -->
+            <h3>Corresponding Code: 3 Lines of Core Logic</h3>
+            <p>Whether maintaining $(\bar{x}_k, SS_k)$ or updating $(\bar{x}_k, s_k^2)$ directly inside the loop, the core recurrence requires only <strong>3 lines of logic</strong>:</p>
+            <div class="code-grid">
+                <pre class="code-showcase"><code><span class="comment">// Form A: Running Mean &amp; Sum of Squares (SS_k)</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> x <span class="keyword">of</span> scores) {
+    k += 1;
+<span class="core-line">    const delta = x - mean;           // 1. x_k - mean_{k-1}</span>
+<span class="core-line">    mean += delta / k;                // 2. Knuth mean update</span>
+<span class="core-line">    ss   += delta * (x - mean);       // 3. Welford SS update</span>
+}
+<span class="keyword">const</span> s2 = ss / (k - 1); <span class="comment">// Unbiased variance</span>
+<span class="keyword">const</span> sigma2Hat = ss / k; <span class="comment">// Biased variance</span></code></pre>
+
+                <pre class="code-showcase"><code><span class="comment">// Form B: Direct Running Mean &amp; Variance Recurrence</span>
+<span class="keyword">for</span> (<span class="keyword">const</span> x <span class="keyword">of</span> scores) {
+    k += 1;
+<span class="core-line">    const delta = x - mean;                        // 1. x_k - mean_{k-1}</span>
+<span class="core-line">    mean += delta / k;                             // 2. Knuth mean update</span>
+<span class="core-line">    s2 += k > 1 ? (delta*(x - mean) - s2)/(k-1) : 0; // 3. Variance update</span>
+}</code></pre>
+            </div>
+
+            <!-- Interactive Numerical Stability Benchmark -->
+            <h3>Numerical Stability Verification: Welford vs. Naive One-Pass</h3>
+            <p>
+                Testing on shifted values $X_i = 10^9 + \epsilon_i$ with $\epsilon \in \{1, 2, 3, 4, 5\}$ (exact theoretical $SS = 10.0$, $s^2 = 2.5$). In IEEE-754 double precision, $x_i^2 \approx 10^{18}$ exceeds the 53-bit mantissa precision ($\approx 9 \times 10^{15}$), causing catastrophic cancellation in the naive formula while Welford remains exact:
+            </p>
+            <div class="btn-row" style="margin-bottom: 1rem;">
+                <button id="btn-test-welford" class="btn-secondary">Verify Welford 3-Line Recurrence ($X_i = 10^9 + \epsilon_i$)</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Exact Theoretical Target</span>
+                    <span class="stat-value" id="bench-exact">s² = 2.5000 (SS = 10.00)</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Welford (Form A: SS / (k-1))</span>
+                    <span class="stat-value" id="bench-welford-a" style="color: #10b981;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Welford (Form B: Direct s²_k)</span>
+                    <span class="stat-value" id="bench-welford-b" style="color: #38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Naive One-Pass ($\sum x^2 - n\bar{x}^2$)</span>
+                    <span class="stat-value" id="bench-naive" style="color: #f43f5e;">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== EXERCISE 2: CONTROLS & SIMULATION ==================== -->
+        <section class="card">
+            <span class="section-badge">Exercise 2</span>
+            <h2>Sampling Mean &amp; Variance: $m$ Hackers Attempting $n$ Systems</h2>
+            <p>
+                Extending the penetration simulation: each of the $m$ hackers attempts to penetrate $n$ systems and receives a score $X_{j,i} \in [0, 10]$ for each system drawn from a chosen probability distribution with theoretical mean $\mu$, variance $\sigma^2$, and fourth central moment $\mu_4$.
+            </p>
+
+            <div class="controls-grid">
+                <div class="input-group">
+                    <label for="dist-select">Score Probability Distribution ($X \in [0, 10]$)</label>
+                    <select id="dist-select">
+                        <option value="discrete_uniform" selected>Discrete Uniform {0, 1, ..., 10} (&mu;=5, &sigma;&sup2;=10)</option>
+                        <option value="continuous_uniform">Continuous Uniform U(0, 10) (&mu;=5, &sigma;&sup2;=8.3333)</option>
+                        <option value="binomial">Binomial Bin(10, p) — 10 Sub-Exploits</option>
+                        <option value="beta_scaled">Scaled Beta 10&middot;Beta(2, 5) — Skewed Difficulty</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="binomial-p-group" style="display: none;">
+                    <label for="param-p">Sub-Exploit Probability $p$: <span id="val-p">0.35</span></label>
+                    <input type="range" id="param-p" min="0.05" max="0.95" step="0.05" value="0.35">
+                </div>
+
+                <div class="input-group">
+                    <label for="param-m">Number of Hackers ($m$): <span id="val-m">500</span></label>
+                    <input type="range" id="param-m" min="50" max="3000" step="50" value="500">
+                </div>
+
+                <div class="input-group">
+                    <label for="param-n">Systems per Hacker ($n$): <span id="val-n">50</span></label>
+                    <input type="range" id="param-n" min="5" max="500" step="5" value="50">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="btn-run-sim">Run Welford Simulation ($m \times n$)</button>
+                <button id="btn-run-multin" class="btn-secondary">Repeat Experiment for Multiple $n \in [5, 500]$</button>
+            </div>
+
+            <!-- Summary Statistics Comparison Grid -->
+            <div class="stats-grid" style="margin-top: 1.5rem;">
+                <div class="stat-item">
+                    <span class="stat-label">Theoretical Mean ($\mu$)</span>
+                    <span class="stat-value" id="stat-theo-mean">5.0000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg. of Sampling Means ($\overline{\bar{X}}_m$)</span>
+                    <span class="stat-value" id="stat-emp-mean" style="color: #38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mean Absolute Error ($|\overline{\bar{X}}_m - \mu|$)</span>
+                    <span class="stat-value" id="stat-mean-err">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Theoretical Variance ($\sigma^2$)</span>
+                    <span class="stat-value" id="stat-theo-var">10.0000</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg. Unbiased Variance ($\overline{S^2}_m$, $\div(n-1)$)</span>
+                    <span class="stat-value" id="stat-emp-var-unbiased" style="color: #10b981;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg. Biased Variance ($\overline{\hat{\sigma}^2}_m$, $\div n$)</span>
+                    <span class="stat-value" id="stat-emp-var-biased" style="color: #f59e0b;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Empirical $\text{Var}(\bar{X})$ vs $\sigma^2/n$</span>
+                    <span class="stat-value" id="stat-var-of-mean">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Empirical $\text{Var}(S^2)$ vs Theo.</span>
+                    <span class="stat-value" id="stat-var-of-var">—</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CHARTS PART 1: SCORE & WELFORD TRAJECTORIES ==================== -->
+        <section class="card">
+            <h2>1. Hacker Penetration Trajectories &amp; Welford Running Estimators</h2>
+            <p>
+                <strong>Top chart:</strong> Cumulative penetration score trajectories $Y_{j,k} = \sum_{i=1}^k X_{j,i}$ across the $n$ systems (extending the previous homework to $[0, 10]$ scores), compared against the theoretical drift line $k\mu$ and the $\pm 2\sigma\sqrt{k}$ confidence envelope.<br>
+                <strong>Bottom charts:</strong> Step-by-step Welford running sample mean $\bar{X}_{j,k}$ and running unbiased sample variance $S_{j,k}^2$ converging toward $\mu$ and $\sigma^2$.
+            </p>
+            <div class="canvas-container chart-wrapper-wide">
+                <canvas id="chart-cum-traj"></canvas>
+            </div>
+            <div class="charts-two-col">
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-mean-traj"></canvas>
+                </div>
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-var-traj"></canvas>
+                </div>
+            </div>
+
+            <!-- Individual Hacker Welford Inspection Table -->
+            <h3 style="margin-top: 1.75rem;">Sample of Individual Hackers (Welford Output per Trajectory of $n$ Scores)</h3>
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Hacker ID</th>
+                            <th style="text-align: left;">Trajectory Preview ($x_{j,1}, x_{j,2}, \dots, x_{j,n}$)</th>
+                            <th>Total Score ($\sum x_{j,i}$)</th>
+                            <th>Welford Mean ($\bar{X}_j$)</th>
+                            <th>Welford $SS_j$</th>
+                            <th>Unbiased $S_j^2$ ($\div(n-1)$)</th>
+                            <th>Biased $\hat{\sigma}_j^2$ ($\div n$)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hacker-sample-tbody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ==================== CHARTS PART 2: SAMPLING DISTRIBUTIONS ==================== -->
+        <section class="card">
+            <h2>2. Empirical Distributions of Sampling Means ($\bar{X}_j$) &amp; Sampling Variances ($S_j^2$) Across $m$ Hackers</h2>
+            <p>
+                Histograms of the $m$ sampling means and $m$ sampling variances computed via Welford’s algorithm. The sampling mean distribution is overlaid with the theoretical Central Limit Theorem normal density $\mathcal{N}(\mu, \sigma^2/n)$.
+            </p>
+            <div class="charts-two-col">
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-mean-dist"></canvas>
+                </div>
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-var-dist"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CHARTS PART 3: MULTI-N SENSITIVITY ==================== -->
+        <section class="card">
+            <h2>3. Effect of Increasing $n$ on Sampling Mean &amp; Variance Variability ($n \in \{5, 10, 25, 50, 100, 250, 500\}$)</h2>
+            <p>
+                Repeating the experiment for different values of $n$ (number of systems attempted per hacker) while holding $m$ fixed. Both the empirical variance of the sampling means $\text{Var}(\bar{X})$ and the empirical variance of the sampling variances $\text{Var}(S^2)$ match their exact theoretical decay laws:
+                $$
+                \text{Var}(\bar{X}) = \frac{\sigma^2}{n}, \qquad
+                \text{Var}(S^2) = \frac{1}{n}\left(\mu_4 - \frac{n-3}{n-1}\sigma^4\right) \quad \text{where } \mu_4 = \mathbb{E}\big[(X - \mu)^4\big].
+                $$
+            </p>
+
+            <div class="charts-two-col">
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-multin-variability"></canvas>
+                </div>
+                <div class="canvas-container chart-wrapper">
+                    <canvas id="chart-multin-bias"></canvas>
+                </div>
+            </div>
+
+            <div class="data-table-wrapper">
+                <table class="data-table" id="multin-table">
+                    <thead>
+                        <tr>
+                            <th>Systems ($n$)</th>
+                            <th>Avg. Mean $\overline{\bar{X}}_m$ ($\mu$)</th>
+                            <th>Avg. Unbiased $\overline{S^2}_m$ ($\sigma^2$)</th>
+                            <th>Avg. Biased $\overline{\hat{\sigma}^2}_m$ ($\frac{n-1}{n}\sigma^2$)</th>
+                            <th>Emp. $\text{Var}(\bar{X})$</th>
+                            <th>Theo. $\sigma^2 / n$</th>
+                            <th>Emp. $\text{Var}(S^2)$</th>
+                            <th>Theo. $\text{Var}(S^2)$</th>
+                        </tr>
+                    </thead>
+                    <tbody id="multin-tbody">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ==================== PART 4: INFERENTIAL STATISTICS DISCUSSION ==================== -->
+        <section class="card">
+            <h2>4. Conclusions &amp; Role in Inferential Statistics</h2>
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4>1. Comparison of Empirical Averages with $\mu$ and $\sigma^2$ (Unbiasedness)</h4>
+                    <p>
+                        Across the $m$ hackers, the average of the sampling means $\frac{1}{m}\sum_{j=1}^m \bar{X}_j$ closely matches the theoretical mean $\mu$, and the average of the Bessel-corrected sampling variances $\frac{1}{m}\sum_{j=1}^m S_j^2$ closely matches $\sigma^2$.
+                        This empirically confirms that $\bar{X}$ and $S^2 = \frac{SS_n}{n-1}$ are <strong>unbiased estimators</strong>:
+                        $$\mathbb{E}[\bar{X}] = \mu, \qquad \mathbb{E}[S^2] = \sigma^2.$$
+                        Conversely, the unadjusted variance $\hat{\sigma}^2 = \frac{SS_n}{n}$ has expectation $\mathbb{E}[\hat{\sigma}^2] = \frac{n-1}{n}\sigma^2 < \sigma^2$, systematically underestimating $\sigma^2$ (especially at small $n$) because estimating $\mu$ via $\bar{X}$ consumes $1$ degree of freedom.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>2. Effect of Increasing $n$ on Estimator Variability (Consistency)</h4>
+                    <p>
+                        Increasing the number of systems $n$ attempted by each hacker causes the variability of both estimators across the $m$ hackers to shrink at rate $\mathcal{O}(1/n)$ for variances and $\mathcal{O}(1/\sqrt{n})$ for standard errors:
+                        $$\text{Var}(\bar{X}) = \frac{\sigma^2}{n} \xrightarrow{n\to\infty} 0$$
+                        $$\text{Var}(S^2) = \frac{1}{n}\left(\mu_4 - \frac{n-3}{n-1}\sigma^4\right) \xrightarrow{n\to\infty} 0$$
+                        Combined with unbiasedness, vanishing variance implies <strong>mean-squared error convergence</strong> ($\text{MSE} \to 0$) and convergence in probability ($\bar{X}_n \xrightarrow{P} \mu$, $S_n^2 \xrightarrow{P} \sigma^2$): both estimators are <strong>consistent</strong>.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>3. Why These Results Are Useful in Inferential Statistics</h4>
+                    <p>
+                        In real-world applications, we do not know the true parameters $(\mu, \sigma^2)$ of the data-generating distribution, nor can we observe $m$ parallel replications—we typically observe only <strong>one sample trajectory</strong> of size $n$.
+                        Unbiasedness and consistency guarantee that:
+                    </p>
+                    <ul>
+                        <li>A single hacker’s $\bar{X}$ and $S^2$ provide reliable point estimates of $\mu$ and $\sigma^2$.</li>
+                        <li>We can quantify the uncertainty of $\bar{X}$ from a single sample by plugging $S$ into the <strong>Standard Error</strong> $\widehat{\text{SE}}(\bar{X}) = \frac{S}{\sqrt{n}}$.</li>
+                        <li>By the Central Limit Theorem and Slutsky’s Theorem, the pivot $T = \frac{\bar{X} - \mu}{S / \sqrt{n}}$ converges to $\mathcal{N}(0,1)$ (or follows Student’s $t_{n-1}$ under normality), enabling <strong>confidence intervals</strong> $\bar{X} \pm t_{\alpha/2, n-1}\frac{S}{\sqrt{n}}$ and <strong>hypothesis tests</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
