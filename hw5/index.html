@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Integration & CDF Computation | Statistics Lab</title>
+    
+    <link rel="stylesheet" href="../style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.6rem;
+        }
+        .derivation-box {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 4px solid #38bdf8;
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .derivation-box.accent-purple { border-left-color: #a855f7; }
+        .derivation-box.accent-emerald { border-left-color: #10b981; }
+        .derivation-box.accent-rose { border-left-color: #f43f5e; }
+        
+        .code-showcase {
+            background: rgba(9, 13, 22, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.6rem;
+            padding: 1.15rem 1.35rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 1.25rem 0;
+        }
+        .code-showcase .keyword { color: #c084fc; }
+        .code-showcase .comment { color: #64748b; font-style: italic; }
+        .code-showcase .numeric { color: #38bdf8; }
+        .code-showcase .core-line {
+            display: block;
+            background: rgba(16, 185, 129, 0.12);
+            border-left: 3px solid #10b981;
+            padding-left: 0.65rem;
+            margin: 0.15rem -0.5rem;
+        }
+
+        .charts-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <a href="../index.html" class="back-link">&larr; Back to Portfolio</a>
+            <h1>Advanced Numerical Integration &amp; Real Analysis</h1>
+            <p class="subtitle">Ex. 1: Riemann vs Lebesgue Geometric Duality &bull; Ex. 2: Normal CDF, Liouville's Theorem &amp; Floating-Point Limits</p>
+        </header>
+
+        <!-- ==================== EXERCISE 1 ==================== -->
+        <section class="card">
+            <span class="section-badge">Exercise 1</span>
+            <h2>Lebesgue Measure Theory vs Riemann Darboux Sums</h2>
+            
+            <p style="margin-bottom: 1rem;">
+                The fundamental shift from Riemann to Lebesgue involves rotating our perspective by 90 degrees: from slicing the <strong>Domain (X)</strong> to slicing the <strong>Range (Y)</strong>.
+            </p>
+
+            <div class="charts-two-col" style="margin-bottom: 0;">
+                <div class="derivation-box">
+                    <h3 style="color: var(--accent-cyan); font-size: 1.05rem; margin-bottom: 0.5rem;">1. Riemann (Vertical Domain Slices)</h3>
+                    <p>Partitions the domain $[a,b]$ into subsets $I_i$. It computes the integral as a sum of vertical rectangles:</p>
+                    $$ \int_a^b f(x) dx \approx \sum_{i=1}^N f(x_i^*) \Delta x_i $$
+                    <p><em>Failure case:</em> The Dirichlet function oscillates infinitely between 0 and 1 on any interval. $\sup(f) = 1$ and $\inf(f) = 0$ everywhere, hence upper and lower Darboux sums never converge.</p>
+                </div>
+
+                <div class="derivation-box accent-purple">
+                    <h3 style="color: var(--accent-indigo); font-size: 1.05rem; margin-bottom: 0.5rem;">2. Lebesgue (Horizontal Range Bins)</h3>
+                    <p>Partitions the range into $y_j$. It groups all $x$'s that produce the same $y$, weighing $y_j$ by the Lebesgue measure $\mu$ of its preimage:</p>
+                    $$ \int f d\mu \approx \sum_{j} y_j \cdot \mu\big(\{x \mid f(x) \approx y_j\}\big) $$
+                    <p><em>Measure Zero:</em> The set of rationals $\mathbb{Q}$ is countable. We can cover it with intervals of length $\epsilon/2^n$. The total length is $\sum \epsilon/2^n = \epsilon$. As $\epsilon \to 0$, the measure $\mu(\mathbb{Q}) = 0$. Thus, Dirichlet integrates to $0$.</p>
+                </div>
+            </div>
+
+            <!-- Interfaccia Interattiva -->
+            <div class="control-grid" style="margin-top: 2rem;">
+                <div class="input-group">
+                    <label for="func-select">Select Mathematical Object $f(x)$</label>
+                    <select id="func-select">
+                        <option value="sin">Smooth: f(x) = sin(x), x in [0, pi]</option>
+                        <option value="x2">Polynomial: f(x) = x^2, x in [0, 1]</option>
+                        <option value="step1">Discontinuity: f(x) = 1 (x < 0.5), 3 (x >= 0.5)</option>
+                        <option value="invsqrt">Asymptotic Singularity: f(x) = 1 / sqrt(x), x in (0, 1]</option>
+                        <option value="sinc">Removable Singularity: f(x) = sin(x) / x, x in [0, pi]</option>
+                        <option value="dirichlet">Pathological: Dirichlet (Mocked), x in [0, 1]</option>
+                        <option value="thomae">Pathological: Thomae's Popcorn, x in [0, 1]</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="partitions">Monte Carlo / Grid Partitions (N)</label>
+                    <input type="number" id="partitions" value="50000" min="1000" step="1000">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="compute-es1">Compute &amp; Plot Geometric Duality</button>
+            </div>
+
+            <!-- Multi-Chart Setup per Es 1 -->
+            <div class="charts-two-col" style="margin-top: 1.5rem;">
+                <div class="chart-wrapper" style="min-height: 380px;">
+                    <h4 style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Riemann's Perspective (Vertical Partitions)</h4>
+                    <canvas id="chart-es1-riemann"></canvas>
+                </div>
+                <div class="chart-wrapper" style="min-height: 380px;">
+                    <h4 style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Lebesgue's Perspective (Measure of Range)</h4>
+                    <canvas id="chart-es1-lebesgue"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-es1">
+                    <thead>
+                        <tr>
+                            <th>Integration Core</th>
+                            <th>Computed Value</th>
+                            <th>Theoretical Exact</th>
+                            <th>Absolute Error</th>
+                            <th>Compute Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-es1">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Execute computation to view metrics.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="es1-discussion-box" style="display: none; background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); padding: 1rem 1.5rem; margin-top: 1.5rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+                <p id="es1-discussion" style="font-size: 0.9rem; margin: 0; color: var(--text-secondary);"></p>
+            </div>
+        </section>
+
+        <!-- ==================== EXERCISE 2 ==================== -->
+        <section class="card">
+            <span class="section-badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.35);">Exercise 2</span>
+            <h2>Normal CDF: Liouville, Taylor &amp; Catastrophic Cancellation</h2>
+            
+            <div class="derivation-box accent-emerald">
+                <h3 style="color: var(--accent-emerald); font-size: 1.05rem; margin-bottom: 0.5rem;">1. Liouville's Theorem &amp; Maclaurin Series</h3>
+                <p>Because the antiderivative of $e^{-t^2}$ is non-elementary (Liouville, 1833), we express $\Phi(z)$ via the Error Function $\text{erf}(x)$. By expanding $e^{-t^2}$ into its Maclaurin series and integrating term-by-term, we obtain:</p>
+                $$ \text{erf}(x) = \frac{2}{\sqrt{\pi}} \int_{0}^{x} \left( \sum_{n=0}^{\infty} \frac{(-1)^n t^{2n}}{n!} \right) dt = \frac{2}{\sqrt{\pi}} \sum_{n=0}^{\infty} \frac{(-1)^n x^{2n+1}}{n! (2n+1)} $$
+                <p>This series converges for all $x \in \mathbb{R}$ mathematically. However, computational physics imposes hardware limits.</p>
+            </div>
+
+            <div class="derivation-box accent-rose">
+                <h3 style="color: #f43f5e; font-size: 1.05rem; margin-bottom: 0.5rem;">2. The IEEE-754 Catastrophic Cancellation Limit</h3>
+                <p>When evaluating the Taylor series for large $|x|$ (e.g., $Z=4$), the term $x^{2n+1}$ grows exponentially before the factorial $n!$ can suppress it. The maximum intermediate term can reach $\sim 10^{15}$.</p>
+                <p>Because IEEE-754 Double Precision <code>Float64</code> provides only 53 bits of mantissa ($\approx 15-17$ decimal digits), adding and subtracting these massive alternating terms to produce a final sum $<1$ strips away all significant digits. The result becomes pure computational noise.</p>
+            </div>
+
+            <pre class="code-showcase"><code><span class="comment">// Taylor Series implementation vulnerable to Catastrophic Cancellation</span>
+<span class="keyword">function</span> computeTaylorErf(x) {
+    <span class="keyword">let</span> sum = <span class="numeric">0</span>, term = x, n = <span class="numeric">0</span>;
+    <span class="keyword">while</span> (Math.abs(term) > <span class="numeric">1e-15</span> && n < <span class="numeric">80</span>) {
+        sum += term;
+        n++;
+<span class="core-line">        <span class="comment">// Recursive term update: alternating sign, factorial div, polynomial grow</span></span>
+<span class="core-line">        term = -term * x * x * (<span class="numeric">2</span> * n - <span class="numeric">1</span>) / (n * (<span class="numeric">2</span> * n + <span class="numeric">1</span>));</span>
+    }
+    <span class="keyword">return</span> (<span class="numeric">2</span> / Math.sqrt(Math.PI)) * sum;
+}</code></pre>
+
+            <div class="control-grid" style="margin-top: 1.5rem;">
+                <div class="input-group">
+                    <label for="cdf-steps">Quadrature Integration Steps (N)</label>
+                    <input type="number" id="cdf-steps" value="1000" min="10" step="100">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="compute-es2" class="secondary">Evaluate CDF Matrix &amp; Run Cancellation Simulation</button>
+            </div>
+
+            <div class="charts-two-col" style="margin-top: 1.5rem;">
+                <!-- PDF/CDF Plot -->
+                <div class="chart-wrapper" style="min-height: 420px;">
+                    <h4 style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Standard Normal PDF &amp; CDF ($\Phi$)</h4>
+                    <canvas id="chart-es2-main"></canvas>
+                </div>
+                <!-- Error Convergence Plot -->
+                <div class="chart-wrapper" style="min-height: 420px;">
+                    <h4 style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Taylor Series Convergence vs Float Limits</h4>
+                    <canvas id="chart-es2-error"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="table-es2">
+                    <thead>
+                        <tr>
+                            <th>Z Score</th>
+                            <th>Reference Exact ($\Phi$)</th>
+                            <th>Trapezoidal Rule</th>
+                            <th>Simpson's 1/3</th>
+                            <th>Taylor Series Exp.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-es2">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Execute computation to view results.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
