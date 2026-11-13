@@ -1,0 +1,94 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction and Statistical Traffic Model}{1}{section.0.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{Introduction and Statistical Traffic Model}{section.0.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Probabilistic Formulation of TCP Flows}{1}{subsection.0.1.1}\protected@file@percent }
+\newlabel{eq:bernoulli_def}{{1.1}{2}{Probabilistic Formulation of TCP Flows}{equation.0.1.1}{}}
+\newlabel{eq:bernoulli_pmf}{{1.2}{2}{Probabilistic Formulation of TCP Flows}{equation.0.1.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Statistical Hypotheses for Network Reconnaissance}{2}{subsection.0.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Streaming Flow Statistics: Welford's and Chan's Algorithms}{2}{section.0.2}\protected@file@percent }
+\newlabel{sec:welford}{{2}{2}{Streaming Flow Statistics: Welford's and Chan's Algorithms}{section.0.2}{}}
+\newlabel{eq:two_pass_var}{{2.1}{2}{Streaming Flow Statistics: Welford's and Chan's Algorithms}{equation.0.2.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Catastrophic Cancellation in IEEE 754 Floating-Point Arithmetic}{3}{subsection.0.2.1}\protected@file@percent }
+\newlabel{eq:naive_expansion}{{2.2}{3}{Catastrophic Cancellation in IEEE 754 Floating-Point Arithmetic}{equation.0.2.2}{}}
+\newlabel{eq:naive_var}{{2.3}{3}{Catastrophic Cancellation in IEEE 754 Floating-Point Arithmetic}{equation.0.2.3}{}}
+\newlabel{eq:fp_axiom}{{2.4}{3}{Catastrophic Cancellation in IEEE 754 Floating-Point Arithmetic}{equation.0.2.4}{}}
+\newlabel{prop:cancellation}{{2.1}{3}{Condition Number and Error Amplification of Naive Variance}{theorem.0.2.1}{}}
+\newlabel{eq:rel_error_bound}{{2.5}{3}{Condition Number and Error Amplification of Naive Variance}{equation.0.2.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Inductive Derivation of Welford's Online Recurrence}{4}{subsection.0.2.2}\protected@file@percent }
+\newlabel{thm:welford}{{2.2}{4}{Welford's Online Recurrence}{theorem.0.2.2}{}}
+\newlabel{eq:welford_mean}{{2.6}{4}{Welford's Online Recurrence}{equation.0.2.6}{}}
+\newlabel{eq:welford_m2}{{2.7}{4}{Welford's Online Recurrence}{equation.0.2.7}{}}
+\@writefile{toc}{\contentsline {paragraph}{Base Case ($n=1$):}{4}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Inductive Step ($n-1 \DOTSB \tmspace  +\thickmuskip {.2777em}\DOTSB \Relbar \joinrel \Rightarrow \tmspace  +\thickmuskip {.2777em}n$):}{4}{section*.2}\protected@file@percent }
+\newlabel{eq:mean_step}{{2.8}{4}{Inductive Step ($n-1 \implies n$):}{equation.0.2.8}{}}
+\newlabel{eq:id_shift}{{2.9}{5}{Inductive Step ($n-1 \implies n$):}{equation.0.2.9}{}}
+\newlabel{eq:id_post}{{2.10}{5}{Inductive Step ($n-1 \implies n$):}{equation.0.2.10}{}}
+\newlabel{eq:bridge_id}{{2.11}{5}{Inductive Step ($n-1 \implies n$):}{equation.0.2.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Chan's Parallel Partition Theorem for Distributed Probes}{5}{subsection.0.2.3}\protected@file@percent }
+\newlabel{thm:chan}{{2.3}{6}{Chan's Parallel Variance Partition Formula}{theorem.0.2.3}{}}
+\newlabel{eq:chan_mean}{{2.12}{6}{Chan's Parallel Variance Partition Formula}{equation.0.2.12}{}}
+\newlabel{eq:chan_m2}{{2.13}{6}{Chan's Parallel Variance Partition Formula}{equation.0.2.13}{}}
+\newlabel{eq:chan_shifts}{{2.14}{6}{Chan's Parallel Partition Theorem for Distributed Probes}{equation.0.2.14}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Fixed-Window Anomaly Detection via LLN and CLT}{6}{section.0.3}\protected@file@percent }
+\newlabel{sec:lln_clt}{{3}{6}{Fixed-Window Anomaly Detection via LLN and CLT}{section.0.3}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Streaming Flow Profiler via Welford and Chan's Update}}{7}{algorithm.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{alg:welford}{{1}{7}{Streaming Flow Profiler via Welford and Chan's Update}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Fundamental Concentration Inequalities and Borel-Cantelli Lemma}{7}{subsection.0.3.1}\protected@file@percent }
+\newlabel{lem:markov}{{3.1}{7}{Markov's Inequality}{theorem.0.3.1}{}}
+\newlabel{eq:markov}{{3.1}{7}{Markov's Inequality}{equation.0.3.1}{}}
+\newlabel{cor:chebyshev}{{3.2}{7}{Chebyshev's Inequality}{theorem.0.3.2}{}}
+\newlabel{eq:chebyshev}{{3.2}{7}{Chebyshev's Inequality}{equation.0.3.2}{}}
+\newlabel{lem:borel_cantelli}{{3.3}{7}{First Borel-Cantelli Lemma}{theorem.0.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Weak and Strong Laws of Large Numbers (WLLN and SLLN)}{8}{subsection.0.3.2}\protected@file@percent }
+\newlabel{thm:wlln}{{3.4}{8}{Weak Law of Large Numbers -- WLLN}{theorem.0.3.4}{}}
+\newlabel{eq:wlln}{{3.3}{8}{Weak Law of Large Numbers -- WLLN}{equation.0.3.3}{}}
+\newlabel{thm:slln}{{3.5}{8}{Strong Law of Large Numbers -- SLLN}{theorem.0.3.5}{}}
+\newlabel{eq:slln}{{3.4}{8}{Strong Law of Large Numbers -- SLLN}{equation.0.3.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Central Limit Theorem and Studentized Welford Detector}{10}{subsection.0.3.3}\protected@file@percent }
+\newlabel{thm:clt}{{3.6}{10}{L\'evy-Lindeberg Central Limit Theorem -- CLT}{theorem.0.3.6}{}}
+\newlabel{eq:clt}{{3.6}{10}{L\'evy-Lindeberg Central Limit Theorem -- CLT}{equation.0.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Minimum Window Size for Fixed-Sample Port Scan Detection}{11}{subsection.0.3.4}\protected@file@percent }
+\newlabel{eq:clt_thresholds}{{3.7}{11}{Minimum Window Size for Fixed-Sample Port Scan Detection}{equation.0.3.7}{}}
+\newlabel{eq:n_clt}{{3.9}{11}{Minimum Window Size for Fixed-Sample Port Scan Detection}{equation.0.3.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Sequential Online Detection: Threshold Random Walk}{11}{section.0.4}\protected@file@percent }
+\newlabel{sec:trw}{{4}{11}{Sequential Online Detection: Threshold Random Walk}{section.0.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Recursive Log-Likelihood Ratio Formulation}{11}{subsection.0.4.1}\protected@file@percent }
+\newlabel{eq:lr_prod}{{4.1}{11}{Recursive Log-Likelihood Ratio Formulation}{equation.0.4.1}{}}
+\newlabel{eq:trw_recurrence}{{4.2}{11}{Recursive Log-Likelihood Ratio Formulation}{equation.0.4.2}{}}
+\newlabel{eq:z_step}{{4.3}{12}{Recursive Log-Likelihood Ratio Formulation}{equation.0.4.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Analytical Derivation of Wald's Stopping Boundaries}{12}{subsection.0.4.2}\protected@file@percent }
+\newlabel{thm:wald_bounds}{{4.1}{12}{Wald's Stopping Threshold Inequalities}{theorem.0.4.1}{}}
+\newlabel{eq:wald_exact_ineq}{{4.4}{12}{Wald's Stopping Threshold Inequalities}{equation.0.4.4}{}}
+\newlabel{eq:wald_thresholds}{{4.5}{12}{Wald's Stopping Threshold Inequalities}{equation.0.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Almost Sure Convergence and Expected Stopping Time via SLLN}{13}{subsection.0.4.3}\protected@file@percent }
+\newlabel{thm:trw_slln}{{4.2}{13}{Kullback-Leibler Drift and Almost Sure Termination of TRW}{theorem.0.4.2}{}}
+\newlabel{eq:as_finite_tau}{{4.6}{13}{Kullback-Leibler Drift and Almost Sure Termination of TRW}{equation.0.4.6}{}}
+\newlabel{eq:kl_def}{{4.7}{13}{Almost Sure Convergence and Expected Stopping Time via SLLN}{equation.0.4.7}{}}
+\newlabel{eq:expected_tau}{{4.8}{13}{Almost Sure Convergence and Expected Stopping Time via SLLN}{equation.0.4.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experimental Evaluation and Numerical Benchmarks}{14}{section.0.5}\protected@file@percent }
+\newlabel{sec:experiments}{{5}{14}{Experimental Evaluation and Numerical Benchmarks}{section.0.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Experiment 1: Numerical Stability of Streaming Variance Estimators}{14}{subsection.0.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.1}{\ignorespaces Relative error in streaming variance estimation ($n=10^5$, $\sigma =1$) as a function of the mean offset $C$. The naive estimator suffers from $\mathcal  {O}(\varepsilon _{\mathrm  {mach}} C^2)$ catastrophic cancellation, collapsing completely at $C = 10^4$ (\texttt  {float32}) and $C = 10^8$ (\texttt  {float64}).}}{14}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:welford_vs_naive}{{5.1}{14}{Relative error in streaming variance estimation ($n=10^5$, $\sigma =1$) as a function of the mean offset $C$. The naive estimator suffers from $\mathcal {O}(\varepsilon _{\mathrm {mach}} C^2)$ catastrophic cancellation, collapsing completely at $C = 10^4$ (\texttt {float32}) and $C = 10^8$ (\texttt {float64})}{figure.caption.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.1}{\ignorespaces Relative variance estimation error $\mathcal  {E}_{\mathrm  {rel}} = |\hat  {s}_n^2 - s_{\mathrm  {exact}}^2| / s_{\mathrm  {exact}}^2$ over $n = 10^5$ packets ($\sigma ^2 = 1.0$) as a function of the clock offset $C = 10^k$. Entries marked \texttt  {1.00e+00 (NaN)} indicate total precision loss.}}{15}{table.caption.4}\protected@file@percent }
+\newlabel{tab:welford_benchmark}{{5.1}{15}{Relative variance estimation error $\mathcal {E}_{\mathrm {rel}} = |\hat {s}_n^2 - s_{\mathrm {exact}}^2| / s_{\mathrm {exact}}^2$ over $n = 10^5$ packets ($\sigma ^2 = 1.0$) as a function of the clock offset $C = 10^k$. Entries marked \texttt {1.00e+00 (NaN)} indicate total precision loss}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Experiment 2: Port Scan Detection Latency (Fixed-Window CLT vs.\ TRW)}{15}{subsection.0.5.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5.2}{\ignorespaces Sample trajectories of the online TRW statistic $\Lambda _n$ compared against the fixed-window CLT sample size $N_{\mathrm  {CLT}} = 20$ ($\alpha =10^{-4}, \beta =10^{-2}$).}}{15}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:trw_trajectories}{{5.2}{15}{Sample trajectories of the online TRW statistic $\Lambda _n$ compared against the fixed-window CLT sample size $N_{\mathrm {CLT}} = 20$ ($\alpha =10^{-4}, \beta =10^{-2}$)}{figure.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5.2}{\ignorespaces Comparison of required sample sizes across scanner aggressiveness profiles ($\alpha = 10^{-4}, \beta = 10^{-2}, \theta _0 = 0.10$): KL drift $D_{\mathrm  {KL}}(P_1 \parallel P_0)$, fixed-window CLT sample size $N_{\mathrm  {CLT}}$ (Eq.~\eqref  {eq:n_clt}), analytical expected stopping time $\mathbb  {E}_{H_1}[\tau ]$ (Eq.~\eqref  {eq:expected_tau}), and empirical Monte Carlo mean $\hat  {\mu }_\tau \pm \hat  {\sigma }_\tau $ over $10^4$ scans.}}{16}{table.caption.6}\protected@file@percent }
+\newlabel{tab:clt_vs_trw}{{5.2}{16}{Comparison of required sample sizes across scanner aggressiveness profiles ($\alpha = 10^{-4}, \beta = 10^{-2}, \theta _0 = 0.10$): KL drift $\DKL (P_1 \parallel P_0)$, fixed-window CLT sample size $N_{\mathrm {CLT}}$ (Eq.~\eqref {eq:n_clt}), analytical expected stopping time $\E _{H_1}[\tau ]$ (Eq.~\eqref {eq:expected_tau}), and empirical Monte Carlo mean $\hat {\mu }_\tau \pm \hat {\sigma }_\tau $ over $10^4$ scans}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{16}{section.0.6}\protected@file@percent }
+\newlabel{sec:conclusions}{{6}{16}{Conclusions}{section.0.6}{}}
+\bibcite{welford1962}{1}
+\bibcite{chan1983}{2}
+\bibcite{knuth1997}{3}
+\bibcite{higham2002}{4}
+\bibcite{billingsley1995}{5}
+\bibcite{wald1945}{6}
+\bibcite{jung2004}{7}
+\bibcite{pebay2008}{8}
+\gdef \@abspage@last{20}
