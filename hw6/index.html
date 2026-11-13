@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Independence & Contingency Analysis | Statistics Lab</title>
+    
+    <!-- Global Portfolio Stylesheet -->
+    <link rel="stylesheet" href="../style.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Fix per evitare che display:flex di .card h2 spezzi le formule inline nei titoli */
+        .card h2 {
+            display: block;
+        }
+
+        /* Isolamento e spaziatura sicura per tutti i blocchi MathJax rispetto al reset * { margin: 0 } */
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block !important;
+            margin: 0.85rem 0 !important;
+            padding: 0.5rem 0.4rem !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.6rem;
+        }
+        .section-badge.purple {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+        .section-badge.emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .section-badge.rose {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border-color: rgba(244, 63, 94, 0.35);
+        }
+
+        .derivation-box {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 4px solid #38bdf8;
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .derivation-box p {
+            margin-bottom: 0.65rem;
+        }
+        .derivation-box.accent-purple { border-left-color: #a855f7; }
+        .derivation-box.accent-emerald { border-left-color: #10b981; }
+        .derivation-box.accent-rose { border-left-color: #f43f5e; }
+
+        .code-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 1.2rem;
+            margin: 1rem 0;
+        }
+        .code-showcase {
+            background: rgba(9, 13, 22, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.6rem;
+            padding: 1.15rem 1.35rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.84rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 0;
+        }
+        .code-showcase .keyword { color: #c084fc; }
+        .code-showcase .comment { color: #64748b; font-style: italic; }
+        .code-showcase .numeric { color: #38bdf8; }
+        .code-showcase .core-line {
+            display: block;
+            background: rgba(16, 185, 129, 0.12);
+            border-left: 3px solid #10b981;
+            padding-left: 0.65rem;
+            margin: 0.15rem -0.5rem;
+        }
+
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+        .theory-card {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.6rem;
+            padding: 1.35rem;
+            overflow-x: auto;
+        }
+        .theory-card h4 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            color: #38bdf8;
+            font-size: 1.02rem;
+            line-height: 1.4;
+        }
+        .theory-card p {
+            font-size: 0.9rem;
+            line-height: 1.65;
+            margin-bottom: 0.75rem;
+        }
+        .theory-card p:last-child {
+            margin-bottom: 0;
+        }
+        .formula-pill {
+            background: rgba(9, 13, 22, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 0.45rem;
+            padding: 0.55rem 0.75rem;
+            margin: 0.75rem 0;
+            text-align: center;
+            overflow-x: auto;
+            font-size: 0.92rem;
+        }
+
+        .charts-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 370px;
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            padding: 1rem;
+        }
+
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1.2rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+            text-align: right;
+        }
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        }
+        .data-table th {
+            text-align: right;
+            color: #38bdf8;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.85);
+        }
+        .data-table th:first-child, .data-table td:first-child {
+            text-align: left;
+            font-weight: 700;
+            color: #f8fafc;
+            background: rgba(15, 23, 42, 0.45);
+        }
+        .data-table tr.marginal-row td {
+            background: rgba(99, 102, 241, 0.12);
+            font-weight: 700;
+            color: #e0e7ff;
+            border-top: 2px solid rgba(99, 102, 241, 0.4);
+        }
+        .data-table td.marginal-col, .data-table th.marginal-col {
+            background: rgba(99, 102, 241, 0.10);
+            font-weight: 700;
+            color: #c7d2fe;
+            border-left: 2px solid rgba(99, 102, 241, 0.35);
+        }
+        .cell-sub {
+            display: block;
+            font-size: 0.74rem;
+            color: #94a3b8;
+            margin-top: 0.15rem;
+        }
+        .res-badge {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.73rem;
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+        .verdict-banner {
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin-top: 1.5rem;
+            border-left: 4px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .verdict-banner.dependent {
+            border-left-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.1);
+        }
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.25rem;
+        }
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+            font-weight: 600;
+            box-shadow: none;
+        }
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        @media (max-width: 680px) {
+            .charts-two-col, .code-grid, .theory-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="../index.html" class="back-link">&larr; Back to Portfolio</a>
+            <h1>Statistical Independence &amp; Contingency Analysis</h1>
+            <p class="subtitle">Bivariate Contingency Tables (X, F) &bull; Marginal &amp; Conditional Profiles &bull; Pearson's &chi;&sup2; Test &bull; Association vs. Causality</p>
+        </header>
+
+        <!-- ==================== SECTION 1: THEORETICAL FOUNDATIONS ==================== -->
+        <section class="card">
+            <span class="section-badge">Theoretical Framework</span>
+            <h2>1. Independence in Probability Theory vs. Statistics</h2>
+            <p style="margin-bottom: 1rem;">
+                Although governed by the same multiplicative structure, the concept of <strong>independence</strong> operates in two distinct epistemological regimes depending on whether we work in <em>deductive probability theory</em> or <em>inductive empirical statistics</em>.
+            </p>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4>A. Independence in Probability (Axiomatic / Deductive)</h4>
+                    <p>
+                        Defined on an abstract probability space $(\Omega, \mathcal{A}, \mathbb{P})$ where the true probability measure $\mathbb{P}$ is known <em>a priori</em>. Two events $A, B \in \mathcal{A}$ (with $\mathbb{P}(A), \mathbb{P}(B) > 0$) are stochastically independent ($A \perp B$) if and only if:
+                    </p>
+                    <div class="formula-pill">
+                        $\mathbb{P}(A \cap B) = \mathbb{P}(A)\mathbb{P}(B) \iff \mathbb{P}(B \mid A) = \mathbb{P}(B)$
+                    </div>
+                    <p>
+                        For two discrete random variables $X \in \mathcal{X}$ and $F \in \mathcal{F}$, independence ($X \perp F$) requires that their joint distribution factorizes identically into the product of the marginals for every pair $(x_i, f_j)$:
+                    </p>
+                    <div class="formula-pill">
+                        $\pi_{ij} = \mathbb{P}(X = x_i, F = f_j) = \pi_{i\cdot} \, \pi_{\cdot j}$
+                    </div>
+                    <p style="font-size: 0.84rem; color: var(--text-muted);">
+                        Equivalently, the Mutual Information between the joint and product distributions vanishes: $I(X; F) = 0$.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>B. Independence in Statistics (Empirical / Inductive)</h4>
+                    <p>
+                        In statistics, we observe a finite bivariate sample $\mathcal{D} = \{(x_k, f_k)\}_{k=1}^N$ arranged in an $R \times C$ contingency table with joint counts $n_{ij}$.
+                    </p>
+                    <p>
+                        <strong>1. Descriptive Independence:</strong> Two sample variables are empirically independent iff all conditional relative frequencies equal the marginal relative frequencies:
+                    </p>
+                    <div class="formula-pill">
+                        $f_{j \mid i} = \frac{n_{ij}}{n_{i\cdot}} = \frac{n_{\cdot j}}{N} \iff n_{ij} = E_{ij} = \frac{n_{i\cdot} n_{\cdot j}}{N}$
+                    </div>
+                    <p>
+                        <strong>2. Inferential Independence:</strong> Due to finite-sample variability, even data drawn from truly independent variables ($\pi_{ij} = \pi_{i\cdot}\pi_{\cdot j}$) rarely satisfies $n_{ij} = E_{ij}$ exactly. Independence is thus tested as a <strong>null hypothesis $H_0: \pi_{ij} = \pi_{i\cdot}\pi_{\cdot j}$</strong> via Pearson's $\chi^2$ statistic.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Mathematical Derivation of Contingency Mechanics & Chi-Square -->
+            <div class="derivation-box accent-purple" style="margin-top: 1.5rem;">
+                <h3 style="color: #c084fc; font-size: 1.05rem; margin-bottom: 0.6rem;">Mathematical Formulation: Marginals, Conditionals &amp; Pearson's $\chi^2$</h3>
+                <p>
+                    Let $X$ take $R$ categories $\{x_1, \dots, x_R\}$ and $F$ take $C$ categories $\{f_1, \dots, f_C\}$. From the joint absolute counts $n_{ij}$, the marginal frequencies and conditional profiles are:
+                </p>
+                $$
+                n_{i\cdot} = \sum_{j=1}^C n_{ij}, \qquad
+                n_{\cdot j} = \sum_{i=1}^R n_{ij}, \qquad
+                N = \sum_{i=1}^R \sum_{j=1}^C n_{ij}
+                $$
+                $$
+                P(F = f_j \mid X = x_i) = \frac{n_{ij}}{n_{i\cdot}}, \qquad
+                P(X = x_i \mid F = f_j) = \frac{n_{ij}}{n_{\cdot j}}
+                $$
+                <p>
+                    Under the hypothesis of independence, $P(F = f_j \mid X = x_i) = P(F = f_j) = n_{\cdot j}/N$, which yields the <strong>expected frequency</strong> $E_{ij}$ in cell $(i,j)$:
+                </p>
+                $$
+                E_{ij} = n_{i\cdot} \cdot P(F = f_j) = \frac{n_{i\cdot} \, n_{\cdot j}}{N}
+                $$
+                <p>
+                    <strong>Karl Pearson’s (1900) Chi-Square Statistic</strong> sums the squared standardized residuals $r_{ij} = \frac{n_{ij} - E_{ij}}{\sqrt{E_{ij}}}$ across all $R \times C$ cells. Under $H_0$ as $N \to \infty$:
+                </p>
+                $$
+                \chi^2 = \sum_{i=1}^R \sum_{j=1}^C \frac{(n_{ij} - E_{ij})^2}{E_{ij}} = \sum_{i=1}^R \sum_{j=1}^C r_{ij}^2 \xrightarrow{\;d\;} \chi^2_{\nu}, \qquad \nu = (R - 1)(C - 1)
+                $$
+                <p style="margin-bottom: 0;">
+                    The asymptotic <strong>$p$-value</strong> is evaluated via the regularized upper incomplete gamma function $Q(\nu/2, \chi^2/2)$, while the normalized effect size is measured by <strong>Cramér’s $V$</strong>:
+                </p>
+                $$
+                p\text{-value} = \mathbb{P}(\chi^2_\nu \ge \chi^2_{\text{obs}}) = \frac{1}{\Gamma(\nu/2)} \int_{\chi^2_{\text{obs}}/2}^{\infty} t^{\frac{\nu}{2} - 1} e^{-t} \, dt, \qquad
+                V = \sqrt{\frac{\chi^2}{N \cdot \min(R-1, C-1)}} \in [0, 1]
+                $$
+            </div>
+
+            <!-- Code Showcase -->
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem;">Algorithmic Implementation: Contingency Reduction &amp; Exact $p$-Value</h3>
+            <div class="code-grid">
+                <pre class="code-showcase"><code><span class="comment">// 1. Programmatic Contingency Table &amp; Chi-Square</span>
+<span class="keyword">function</span> analyzeBivariate(records) {
+    <span class="comment">// Single-pass reduction of arbitrary (x, f) stream</span>
+    <span class="keyword">for</span> (<span class="keyword">const</span> { x, f, w = <span class="numeric">1</span> } <span class="keyword">of</span> records) {
+        counts[x][f] = (counts[x][f] || <span class="numeric">0</span>) + w;
+        rowMarginals[x] += w; colMarginals[f] += w; N += w;
+    }
+<span class="core-line">    <span class="comment">// Expected frequencies E_ij &amp; Pearson Chi-Square</span></span>
+<span class="core-line">    <span class="keyword">const</span> E_ij = (rowMarginals[i] * colMarginals[j]) / N;</span>
+<span class="core-line">    <span class="keyword">const</span> r_ij = (O_ij - E_ij) / Math.sqrt(E_ij);</span>
+<span class="core-line">    chi2 += r_ij * r_ij;</span>
+}</code></pre>
+
+                <pre class="code-showcase"><code><span class="comment">// 2. Exact p-Value via Incomplete Gamma Q(df/2, chi2/2)</span>
+<span class="keyword">function</span> chiSquarePValue(chi2, df) {
+    <span class="keyword">const</span> a = df / <span class="numeric">2</span>, z = chi2 / <span class="numeric">2</span>;
+    <span class="keyword">if</span> (z &lt;= <span class="numeric">0</span> || df &lt;= <span class="numeric">0</span>) <span class="keyword">return</span> <span class="numeric">1.0</span>;
+<span class="core-line">    <span class="comment">// Switch between Power Series &amp; Lentz Continued Fraction</span></span>
+<span class="core-line">    <span class="keyword">return</span> (z &lt; a + <span class="numeric">1</span>)</span>
+<span class="core-line">        ? <span class="numeric">1</span> - gammaSeriesP(a, z)</span>
+<span class="core-line">        : gammaContinuedFractionQ(a, z);</span>
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 2: INTERACTIVE BIVARIATE ENGINE ==================== -->
+        <section class="card">
+            <span class="section-badge emerald">Interactive Engine</span>
+            <h2>2. Bivariate Dataset (X, F) Explorer &amp; Contingency Builder</h2>
+            <p>
+                Select one of the pre-configured empirical datasets, generate synthetic Monte Carlo bivariate samples with tunable coupling $\lambda \in [0, 1]$, or paste/edit <strong>any custom bivariate dataset $(X, F)$</strong> directly in the raw data editor below.
+            </p>
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="preset-select">Bivariate Dataset Scenario (X, F)</label>
+                    <select id="preset-select">
+                        <option value="cyber_attack" selected>1. Cybersecurity: Attack Vector (X) vs. Target Architecture (F) [Dependent]</option>
+                        <option value="tls_loss">2. Network Telemetry: TLS Cipher Suite (X) vs. Packet Jitter Tier (F) [Independent H0]</option>
+                        <option value="confounded_waf">3. Confounded Security Alert: WAF Strictness (X) vs. Incident Rate (F) [Spurious Assoc.]</option>
+                        <option value="montecarlo">4. Monte Carlo Synthetic Generator (Tunable Sample Size N &amp; Coupling &lambda;)</option>
+                        <option value="custom">5. Custom Raw Bivariate Dataset (Edit CSV / Stream Below)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="alpha-select">Significance Level (&alpha;)</label>
+                    <select id="alpha-select">
+                        <option value="0.10">&alpha; = 0.10 (90% Confidence)</option>
+                        <option value="0.05" selected>&alpha; = 0.05 (95% Confidence — Standard)</option>
+                        <option value="0.01">&alpha; = 0.01 (99% Confidence)</option>
+                        <option value="0.001">&alpha; = 0.001 (99.9% Confidence)</option>
+                    </select>
+                </div>
+
+                <div class="input-group" id="mc-n-group" style="display: none;">
+                    <label for="mc-n">Monte Carlo Sample Size (N): <span id="val-mc-n">600</span></label>
+                    <input type="range" id="mc-n" min="60" max="3000" step="60" value="600">
+                </div>
+
+                <div class="input-group" id="mc-lambda-group" style="display: none;">
+                    <label for="mc-lambda">Dependency Coupling (&lambda;): <span id="val-mc-lambda">0.00 (Pure H0)</span></label>
+                    <input type="range" id="mc-lambda" min="0" max="0.85" step="0.05" value="0.00">
+                </div>
+            </div>
+
+            <!-- Editable Raw Bivariate Dataset Input -->
+            <div style="margin-top: 1rem;">
+                <label for="raw-data-input" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                    <span>Raw Bivariate Dataset (X, F) — Format: <code>Category_X, Category_F</code> (or <code>Category_X, Category_F, Count</code>)</span>
+                    <span id="dataset-meta-badge" class="badge badge-primary">R × C Matrix</span>
+                </label>
+                <textarea id="raw-data-input" spellcheck="false" style="min-height: 125px;"></textarea>
+            </div>
+
+            <div class="btn-row">
+                <button id="btn-run-analysis">Construct Contingency Table &amp; Run &chi;&sup2; Test</button>
+                <button id="btn-resample-mc" class="secondary" style="display: none;">Regenerate Random Sample</button>
+            </div>
+
+            <!-- KPI Summary Grid -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Sample Size (N) &amp; Grid</span>
+                    <span class="stat-value" id="stat-n-grid">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pearson &chi;&sup2; Statistic</span>
+                    <span class="stat-value" id="stat-chi2" style="color: #38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Degrees of Freedom (&nu;)</span>
+                    <span class="stat-value" id="stat-df">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Critical Value (&chi;&sup2; crit)</span>
+                    <span class="stat-value" id="stat-crit" style="color: #f59e0b;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Exact p-Value</span>
+                    <span class="stat-value" id="stat-pvalue" style="color: #10b981;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Cramér's V (Effect Size)</span>
+                    <span class="stat-value" id="stat-cramers" style="color: #c084fc;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Likelihood Ratio (G&sup2;)</span>
+                    <span class="stat-value" id="stat-g2">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mutual Info I(X;F) (bits)</span>
+                    <span class="stat-value" id="stat-mi">—</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Hypothesis Verdict Banner -->
+            <div id="verdict-box" class="verdict-banner">
+                <h3 id="verdict-title" style="margin-bottom: 0.35rem; font-size: 1.1rem; color: #f8fafc;">Statistical Decision</h3>
+                <p id="verdict-text" style="margin: 0; font-size: 0.92rem;"></p>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 3: CONTINGENCY TABLES ==================== -->
+        <section class="card">
+            <span class="section-badge purple">Contingency Matrices</span>
+            <h2>3. Joint, Marginal, Conditional &amp; Expected Frequency Tables</h2>
+            <p>
+                Switch between views below to inspect the programmatic decomposition of $(X, F)$: Joint &amp; Marginal counts, Conditional Row Profiles $P(F \mid X)$, Conditional Column Profiles $P(X \mid F)$, and the Expected Frequencies $E_{ij}$ with standardized Pearson residuals $r_{ij}$.
+            </p>
+
+            <div class="tab-bar">
+                <button class="tab-btn active" data-view="joint">1. Joint Counts ($n_{ij}$) &amp; Relative ($p_{ij}$)</button>
+                <button class="tab-btn" data-view="row_cond">2. Conditional Row Profiles $P(F = f_j \mid X = x_i)$</button>
+                <button class="tab-btn" data-view="col_cond">3. Conditional Column Profiles $P(X = x_i \mid F = f_j)$</button>
+                <button class="tab-btn" data-view="expected">4. Expected ($E_{ij}$) &amp; Pearson Residuals ($r_{ij}$)</button>
+            </div>
+
+            <div id="table-view-description" style="margin-top: 0.9rem; font-size: 0.88rem; color: var(--text-muted);"></div>
+
+            <div class="data-table-wrapper">
+                <table class="data-table" id="contingency-table">
+                    <thead id="contingency-thead"></thead>
+                    <tbody id="contingency-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 4: VISUAL DIAGNOSTICS ==================== -->
+        <section class="card">
+            <span class="section-badge">Visual Diagnostics</span>
+            <h2>4. Conditional Profile Alignment &amp; &chi;&sup2; Hypothesis Testing Plots</h2>
+            <p>
+                <strong>Left chart:</strong> Compares the conditional row distributions $P(F = f_j \mid X = x_i)$ against the marginal distribution $P(F = f_j)$ (dashed line). Under independence, all bars for a given category $f_j$ align with the marginal baseline.<br>
+                <strong>Right chart:</strong> Theoretical $\chi^2_\nu$ density showing the critical rejection threshold $\chi^2_{1-\alpha, \nu}$ and the observed statistic $\chi^2_{\text{obs}}$.
+            </p>
+
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-conditional"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-chisq-pdf"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-wrapper" style="margin-top: 1.5rem; min-height: 330px;">
+                <canvas id="chart-residuals"></canvas>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 5: ASSOCIATION VS CAUSALITY ==================== -->
+        <section class="card">
+            <span class="section-badge rose">Critical Epistemology</span>
+            <h2>5. Statistical Association vs. Causality</h2>
+            <p style="margin-bottom: 1rem;">
+                Even when Pearson's $\chi^2$ test yields a tiny $p$-value ($p \ll 0.001$) and a large Cramér's $V$, rejecting $H_0$ only demonstrates <strong>statistical association (stochastic dependence)</strong>: $P(X, F) \neq P(X)P(F)$. It does <strong>not</strong> prove that $X$ causes $F$ ($X \to F$).
+            </p>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4>1. Algebraic Symmetry vs. Causal Directionality</h4>
+                    <p>
+                        Both Pearson’s $\chi^2$ and Mutual Information are strictly symmetric with respect to $X$ and $F$:
+                    </p>
+                    <div class="formula-pill">
+                        $\chi^2(X, F) = \chi^2(F, X)$
+                        <br>
+                        $I(X; F) = I(F; X)$
+                    </div>
+                    <p>
+                        A bivariate contingency table cannot distinguish between forward causation ($X \to F$), reverse causation ($F \to X$), or selection bias without external structural assumptions.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>2. Confounding &amp; Reichenbach’s Principle</h4>
+                    <p>
+                        By <strong>Reichenbach’s Common Cause Principle</strong>, if $X$ and $F$ are statistically dependent ($X \not\perp F$), an unobserved confounder $Z$ may be driving both ($X \leftarrow Z \to F$). Even if $X$ and $F$ are conditionally independent given $Z$ ($X \perp F \mid Z$), marginalizing over $Z$ creates a spurious association:
+                    </p>
+                    <div class="formula-pill">
+                        $P(X, F) = \sum_{z} P(z)\,P(X \mid z)\,P(F \mid z) \neq P(X)P(F)$
+                    </div>
+                    <p>
+                        In <strong>Simpson’s Paradox</strong>, the sign of the association in the marginal table $(X, F)$ can even reverse completely when stratified across the levels of $Z$.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>3. Observational vs. Interventional Conditioning</h4>
+                    <p>
+                        In Judea Pearl’s causal hierarchy, contingency tables only estimate the <em>observational</em> conditional distribution ("seeing $X=x$"), whereas causality is defined by the <em>interventional</em> distribution ("setting $do(X=x)$"):
+                    </p>
+                    <div class="formula-pill">
+                        $P(F = f \mid X = x) \neq P\big(F = f \mid do(X = x)\big)$
+                    </div>
+                    <p>
+                        Establishing causality requires either a <strong>Randomized Controlled Trial (RCT)</strong>—which removes incoming confounding paths into $X$—or adjusting for a valid back-door covariate set $Z$.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Statistics &amp; Calculus Laboratory &bull; Contingency Analysis, Pearson's &chi;&sup2; &amp; Causal Inference</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
