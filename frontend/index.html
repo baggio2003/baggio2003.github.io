@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naked File Transfer — Control Panel & Analytics</title>
+<!-- 1. Stile principale del tuo Portfolio (font, sfondo, card, variabili CSS) -->
+  <link rel="stylesheet" href="../style.css?v=3">
+  <!-- 2. Layout specifico dei componenti del progetto (dropzone, terminale, tabelle) -->
+  <link rel="stylesheet" href="style/style.css">
+  <link rel="stylesheet" href="style/analysis.css">
+  <!-- Statistical Analysis: mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {
+      delimiters: [
+        {left: '\\[', right: '\\]', display: true},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    })">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    .top-nav-bar {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 12px;
+    }
+    .btn-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(100, 116, 139, 0.4);
+      color: inherit;
+      background-color: rgba(15, 23, 42, 0.04);
+      transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-back-home:hover {
+      background-color: rgba(100, 116, 139, 0.15);
+      border-color: rgba(100, 116, 139, 0.7);
+      transform: translateX(-2px);
+    }
+    .chart-jump-link {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-decoration: none;
+      margin-left: 8px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(100, 116, 139, 0.35);
+      color: inherit;
+      opacity: 0.75;
+      vertical-align: middle;
+      transition: opacity 0.15s ease, background-color 0.15s ease;
+    }
+    .chart-jump-link:hover {
+      opacity: 1;
+      background-color: rgba(100, 116, 139, 0.15);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <!-- TOP BACK TO HOME BUTTON -->
+    <div class="top-nav-bar">
+      <a href="../index.html" class="btn-back-home" title="Return to Statistics Laboratory Portfolio">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Back to Portfolio Home</span>
+      </a>
+    </div>
+
+    <header>
+      <h1>Bitstream File Analyzer</h1>
+      <p>Fragmented binary file transfer and real time in-transit entropy analysis</p>
+    </header>
+
+    <!-- UPLOAD CARD (MEMBER 1) -->
+    <div class="card upload-card">
+
+      <!-- Modern Drag & Drop Zone -->
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" class="file-input-hidden">
+
+        <!-- Empty State -->
+        <div class="dropzone-empty" id="dropzoneEmpty">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <div class="dropzone-text">
+            <strong>Choose a file</strong> or drag and drop it here
+          </div>
+          <span class="dropzone-hint">Supports any binary, document, archive, or media file (Chunk size: 1 MB)</span>
+        </div>
+
+        <!-- Selected File State -->
+        <div class="dropzone-selected" id="dropzoneSelected" style="display: none;">
+          <div class="file-info-box">
+            <div class="file-icon-badge" id="fileExtensionBadge">FILE</div>
+            <div class="file-details">
+              <span class="file-name" id="fileNameDisplay">filename.bin</span>
+              <span class="file-meta" id="fileMetaDisplay">0 KB • 0 Chunks</span>
+            </div>
+            <button type="button" class="btn-change-file" id="changeFileBtn" title="Change selected file">Change
+              File</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Row & Progress -->
+      <div class="upload-action-row">
+        <button type="button" class="btn btn-primary" id="uploadBtn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 16 12 12 8 16"></polyline>
+            <line x1="12" y1="12" x2="12" y2="21"></line>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+          </svg>
+          <span>Start Upload and Analysis</span>
+        </button>
+
+        <div class="transfer-progress-wrapper" id="progressWrapper" style="display: none;">
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="uploadProgressBar" style="width: 0%;"></div>
+          </div>
+          <span class="progress-label" id="progressLabel">0%</span>
+        </div>
+      </div>
+
+      <!-- Terminal / Console Output -->
+      <div class="terminal-wrapper">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">Transmission and Pipeline Log</span>
+          <button type="button" class="btn-terminal-clear" id="clearLogBtn">Clear Log</button>
+        </div>
+        <pre id="statusLog">Select a file and click "Start Upload and Analysis".</pre>
+      </div>
+    </div>
+
+    <!-- ENTROPY CHART (MEMBER 3) -->
+    <div class="card" id="card-chart-entropy">
+      <h3>
+        Shannon Entropy Trend (Chunk by Chunk)
+        <button type="button" class="btn-outline" onclick="scaricaGrafico('chartEntropy', 'entropy_over_time')">Export
+          PNG</button>
+      </h3>
+      <canvas id="chartEntropy"></canvas>
+    </div>
+
+    <!-- BYTE AND BIT CHARTS (MEMBER 3) -->
+    <div class="grid-2">
+      <div class="card" id="card-chart-byte">
+        <h3>
+          Byte Frequency (0-255)
+          <button type="button" class="btn-outline" onclick="scaricaGrafico('chartByte', 'byte_frequency')">Export
+            PNG</button>
+        </h3>
+        <canvas id="chartByte"></canvas>
+      </div>
+
+      <div class="card" id="card-chart-bit">
+        <h3>
+          Bit Balance (0 vs 1)
+          <button type="button" class="btn-outline" onclick="scaricaGrafico('chartBit', 'bit_distribution')">Export
+            PNG</button>
+        </h3>
+        <canvas id="chartBit"></canvas>
+      </div>
+    </div>
+
+    <!-- CHI-SQUARE CHART (MEMBER 3 & 4) -->
+    <div class="card" id="card-chart-chi" style="margin-top: 20px;">
+      <h3>
+        Chi-Square Test Trend (df = 255)
+        <button type="button" class="btn-outline" onclick="scaricaGrafico('chartChiSquare', 'chi_square_test')">Export
+          PNG</button>
+      </h3>
+      <canvas id="chartChiSquare"></canvas>
+    </div>
+
+    <!-- STATISTICAL INFERENCE SUMMARY CARD -->
+    <div class="card" id="card-stats-summary" style="margin-top: 20px;">
+      <h3>Statistical Inference &amp; Randomness Testing</h3>
+      <div id="statsSummaryGrid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 10px;">
+        <div style="background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: monospace;">
+          <h4 style="color: #10b981; margin: 0 0 8px 0;">Plaintext</h4>
+          <div id="summaryPlain">Awaiting data...</div>
+        </div>
+        <div style="background: #0f172a; color: #f59e0b; padding: 12px; border-radius: 6px; font-family: monospace;">
+          <h4 style="color: #f59e0b; margin: 0 0 8px 0;">Compressed</h4>
+          <div id="summaryCompressed">Awaiting data...</div>
+        </div>
+        <div style="background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 6px; font-family: monospace;">
+          <h4 style="color: #ef4444; margin: 0 0 8px 0;">Encrypted</h4>
+          <div id="summaryEncrypted">Awaiting data...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE RESULTS TABLES -->
+    <section class="analysis-section" id="analysis-results">
+      <p class="analysis-lead">Cells marked “—” are filled automatically after an upload. No values are invented.
+        Computed values (monospace) are kept visually separate from the written interpretation.</p>
+
+      <h3>
+        1. Entropy comparison (bits per byte)
+        <a href="#card-chart-entropy" class="chart-jump-link" title="Go to Shannon Entropy Trend chart">↑ Entropy Chart</a>
+      </h3>
+      <div class="analysis-table-wrap">
+        <table class="analysis-table" id="analysis-table-entropy">
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>Chunks</th>
+              <th>Mean</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Std. dev. between chunks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-variant="plain">
+              <td><span class="analysis-dot analysis-dot-plain"></span>Plaintext</td>
+              <td class="analysis-computed analysis-pending" data-f="n">—</td>
+              <td class="analysis-computed analysis-pending" data-f="mean">—</td>
+              <td class="analysis-computed analysis-pending" data-f="min">—</td>
+              <td class="analysis-computed analysis-pending" data-f="max">—</td>
+              <td class="analysis-computed analysis-pending" data-f="sd">—</td>
+            </tr>
+            <tr data-variant="compressed">
+              <td><span class="analysis-dot analysis-dot-comp"></span>Compressed (GZIP)</td>
+              <td class="analysis-computed analysis-pending" data-f="n">—</td>
+              <td class="analysis-computed analysis-pending" data-f="mean">—</td>
+              <td class="analysis-computed analysis-pending" data-f="min">—</td>
+              <td class="analysis-computed analysis-pending" data-f="max">—</td>
+              <td class="analysis-computed analysis-pending" data-f="sd">—</td>
+            </tr>
+            <tr data-variant="encrypted">
+              <td><span class="analysis-dot analysis-dot-enc"></span>Encrypted (AES-256-CTR)</td>
+              <td class="analysis-computed analysis-pending" data-f="n">—</td>
+              <td class="analysis-computed analysis-pending" data-f="mean">—</td>
+              <td class="analysis-computed analysis-pending" data-f="min">—</td>
+              <td class="analysis-computed analysis-pending" data-f="max">—</td>
+              <td class="analysis-computed analysis-pending" data-f="sd">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>
+        2. Chi-square results (α = 0.01)
+        <a href="#card-chart-chi" class="chart-jump-link" title="Go to Chi-Square Test Trend chart">↑ Chi-Square Chart</a>
+        <a href="#card-chart-byte" class="chart-jump-link" title="Go to Byte Frequency chart">↑ Byte Histogram</a>
+      </h3>
+      <div class="analysis-table-wrap">
+        <table class="analysis-table" id="analysis-table-chi">
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>χ² (mean)</th>
+              <th>df</th>
+              <th>Z (auxiliary, mean)</th>
+              <th>p-value (median)</th>
+              <th>Decision vs α</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-variant="plain">
+              <td><span class="analysis-dot analysis-dot-plain"></span>Plaintext</td>
+              <td class="analysis-computed analysis-pending" data-f="chi">—</td>
+              <td class="analysis-computed analysis-pending" data-f="df">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+            <tr data-variant="compressed">
+              <td><span class="analysis-dot analysis-dot-comp"></span>Compressed (GZIP)</td>
+              <td class="analysis-computed analysis-pending" data-f="chi">—</td>
+              <td class="analysis-computed analysis-pending" data-f="df">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+            <tr data-variant="encrypted">
+              <td><span class="analysis-dot analysis-dot-enc"></span>Encrypted (AES-256-CTR)</td>
+              <td class="analysis-computed analysis-pending" data-f="chi">—</td>
+              <td class="analysis-computed analysis-pending" data-f="df">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>
+        3. Bit monobit results (α = 0.01)
+        <a href="#card-chart-bit" class="chart-jump-link" title="Go to Bit Balance chart">↑ Bit Balance Chart</a>
+      </h3>
+      <div class="analysis-table-wrap">
+        <table class="analysis-table" id="analysis-table-monobit">
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>Bits at 0 (%)</th>
+              <th>Bits at 1 (%)</th>
+              <th>Z (mean)</th>
+              <th>p-value (median)</th>
+              <th>Decision vs α</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-variant="plain">
+              <td><span class="analysis-dot analysis-dot-plain"></span>Plaintext</td>
+              <td class="analysis-computed analysis-pending" data-f="zeros">—</td>
+              <td class="analysis-computed analysis-pending" data-f="ones">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+            <tr data-variant="compressed">
+              <td><span class="analysis-dot analysis-dot-comp"></span>Compressed (GZIP)</td>
+              <td class="analysis-computed analysis-pending" data-f="zeros">—</td>
+              <td class="analysis-computed analysis-pending" data-f="ones">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+            <tr data-variant="encrypted">
+              <td><span class="analysis-dot analysis-dot-enc"></span>Encrypted (AES-256-CTR)</td>
+              <td class="analysis-computed analysis-pending" data-f="zeros">—</td>
+              <td class="analysis-computed analysis-pending" data-f="ones">—</td>
+              <td class="analysis-computed analysis-pending" data-f="z">—</td>
+              <td class="analysis-computed analysis-pending" data-f="p">—</td>
+              <td data-f="decision">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="analysis-note">Chunks of one file are not independent samples. Summaries describe the analysed file only
+        and are not an inferential test across files. Running many tests also raises the overall false-positive rate
+        (multiple comparisons).</p>
+    </section>
+
+    <!-- ANALYSIS START: sezione di analisi statistica (teoria + risultati) -->
+    <div class="analysis-section" id="analysis-top">
+      <h2>Statistical Analysis and Interpretation</h2>
+      <p class="analysis-lead">Methodology, transformation algorithms, hypothesis tests, results and conclusions of the
+        file-transfer analysis.</p>
+      <nav class="analysis-nav" aria-label="Analysis sections">
+        <a class="btn-outline" href="#analysis-intro">A. Introduction</a>
+        <a class="btn-outline" href="#analysis-algorithms">B. Algorithms</a>
+        <a class="btn-outline" href="#analysis-metrics">C. Metrics</a>
+        <a class="btn-outline" href="#analysis-hypothesis">D. Hypothesis testing</a>
+        <a class="btn-outline" href="#analysis-tests">E. Tests</a>
+        <a class="btn-outline" href="#analysis-multifile">F. Multi-file</a>
+        <a class="btn-outline" href="#analysis-discussion">G. Conclusions</a>
+      </nav>
+    </div>
+
+    <!-- A. INTRODUCTION -->
+    <section class="analysis-section" id="analysis-intro">
+      <h2>A. Introduction and Research Objective</h2>
+      <div class="analysis-question">
+        <span class="analysis-tag">Research question</span>
+        <strong>Can entropy alone reliably distinguish compressed data from encrypted data?</strong>
+      </div>
+      <p><b>Objective.</b> We study the statistical properties of three representations of the same file, and ask
+        whether compression and encryption produce different distributions and whether the metrics below can detect the
+        difference.</p>
+      <div class="analysis-grid-3">
+        <div class="card analysis-plain">
+          <h3>Plaintext</h3>
+          <p>The original file. Usually shows redundancy: some byte values are far more frequent than others.</p>
+        </div>
+        <div class="card analysis-comp">
+          <h3>Compressed (GZIP)</h3>
+          <p>DEFLATE removes much redundancy, but the output is a deterministic transformation of a structured source
+            and keeps a recognisable format (header, blocks).</p>
+        </div>
+        <div class="card analysis-enc">
+          <h3>Encrypted (AES-256-CTR)</h3>
+          <p>The plaintext is XORed with a pseudorandom keystream, so the output is expected to be statistically close
+            to uniform bytes.</p>
+        </div>
+      </div>
+      <p><b>Analysis approach.</b></p>
+      <ul>
+        <li><b>Descriptive analysis:</b> observe entropy, byte frequencies and bit distribution, chunk by chunk.</li>
+        <li><b>Inferential analysis:</b> apply hypothesis tests (chi-square, bit monobit) to check specific properties
+          of the observed distributions.</li>
+      </ul>
+    </section>
+
+    <!-- B. COMPRESSION & ENCRYPTION ALGORITHMS (MEMBER 2) -->
+    <section class="analysis-section" id="analysis-algorithms">
+      <h2>B. Transformation Algorithms (Compression and Encryption)</h2>
+      <p class="analysis-lead">Before slicing the file into 1 MB chunks, the browser generates three distinct binary
+        streams in memory (<code>transform.js</code>) using native Web APIs. Understanding how each algorithm transforms the input
+        bytes explains why their statistical distributions differ.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>1. Lossless Compression: GZIP (DEFLATE)</h3>
+          <p><b>Implementation:</b> Browser native <code>CompressionStream('gzip')</code> API (RFC 1952 / RFC 1951).</p>
+          <p><b>How it works:</b> GZIP is based on the <b>DEFLATE</b> algorithm, which removes statistical redundancy in
+            two sequential stages:</p>
+          <ul>
+            <li><b>LZ77 (Sliding-Window Dictionary):</b> scans the input stream for repeated byte sequences (up to 32 KB
+              back) and replaces duplicates with compact pointer tuples \(\langle \text{distance}, \text{length}
+              \rangle\).</li>
+            <li><b>Huffman Coding (Entropy Coding):</b> replaces frequent symbols with shorter prefix-free bitstrings
+              and rare symbols with longer ones, approaching the theoretical Shannon limit:
+              <div class="analysis-formula">\[ L_{\text{avg}} = \sum_{i} p_i \, l_i \approx H(X) \]</div>
+            </li>
+          </ul>
+          <p><b>Why it is not truly uniform:</b> Although Huffman coding packs bits tightly (pushing Shannon entropy
+            close to \(8\text{ bits/byte}\)), a GZIP stream still contains deterministic structural elements: a 10-byte
+            header (<code>1f 8b 08...</code>), dynamic Huffman tree descriptions at the beginning of each block, and an
+            8-byte trailer (CRC-32 checksum and original file size). Because it optimizes for compactness rather than
+            cryptographic indistinguishability, slight byte-level biases remain detectable by the \(\chi^2\) test.</p>
+        </div>
+
+        <div class="card">
+          <h3>2. Symmetric Encryption: AES-256-CTR</h3>
+          <p><b>Implementation:</b> Browser native <code>Web Crypto API</code> (<code>crypto.subtle.encrypt</code>, NIST
+            SP 800-38A).</p>
+          <p><b>How it works:</b> The Advanced Encryption Standard with a <b>256-bit key</b> (14 transformation rounds
+            of <i>SubBytes</i>, <i>ShiftRows</i>, <i>MixColumns</i>, and <i>AddRoundKey</i>) is operated in <b>Counter
+              (CTR) mode</b>, turning the block cipher into a synchronous stream cipher:</p>
+          <ul>
+            <li>A random 128-bit initial counter block \(T_1 = \text{Nonce} \parallel \text{Counter}\) is generated via
+              CSPRNG (<code>crypto.getRandomValues</code>).</li>
+            <li>For each 16-byte block \(k\), the cipher encrypts the incremented counter to produce a pseudorandom
+              keystream block \(S_k = \operatorname{AES}_{K}(T_k)\).</li>
+            <li>The ciphertext is obtained by bitwise XORing the plaintext \(P\) with the keystream \(S\):
+              <div class="analysis-formula">\[ C_i = P_i \oplus S_i \]</div>
+            </li>
+          </ul>
+          <p><b>Why it behaves like a uniform random source:</b> Under the standard assumption that AES acts as a
+            Pseudorandom Permutation (PRP), the keystream \(S_i\) is computationally indistinguishable from independent
+            uniform bytes in \(\{0,\dots,255\}\). XORing any plaintext distribution with an independent uniform
+            distribution yields a strictly uniform output, with no padding overhead and no container headers.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 15px;">
+        <h3>3. Summary of Algorithmic Properties and Expected Statistical Footprint</h3>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th>Variant</th>
+                <th>Algorithm and API</th>
+                <th>Output Size</th>
+                <th>Primary Goal</th>
+                <th>Expected Statistical Behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="analysis-dot analysis-dot-plain"></span><b>Plaintext</b></td>
+                <td>Raw <code>File</code> / <code>Blob</code></td>
+                <td>\(N\) bytes (100%)</td>
+                <td>Human/machine readability</td>
+                <td>Low entropy, unbalanced bits, high \(\chi^2\) (strong rejection of uniformity).</td>
+              </tr>
+              <tr>
+                <td><span class="analysis-dot analysis-dot-comp"></span><b>Compressed</b></td>
+                <td>GZIP (LZ77 + Huffman)<br><code>CompressionStream</code></td>
+                <td>\(\ll N\) bytes (for redundant data)</td>
+                <td>Minimize size (eliminate redundancy)</td>
+                <td>Near-maximum entropy (\(\approx 7.8\text{–}7.99\)), balanced bits, but \(\chi^2\) often rejects
+                  uniformity due to framing and coding bias.</td>
+              </tr>
+              <tr>
+                <td><span class="analysis-dot analysis-dot-enc"></span><b>Encrypted</b></td>
+                <td>AES-256-CTR (256-bit key)<br><code>crypto.subtle</code></td>
+                <td>Exactly \(N\) bytes (no padding)</td>
+                <td>Confidentiality and pseudorandomness</td>
+                <td>Maximum entropy (\(\approx 8.000\)), balanced bits (\(50\%/50\%\)), and \(\chi^2 \approx 255\)
+                  compatible with \(H_0\) (uniform distribution).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- C. METRICS -->
+    <section class="analysis-section" id="analysis-metrics">
+      <h2>C. Statistical Metrics</h2>
+      <p class="analysis-lead">Each chunk of N bytes is summarised by the metrics below. These are descriptive
+        statistics: they describe the data, they do not test anything by themselves.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>
+            1. Shannon Entropy
+            <a href="#card-chart-entropy" class="chart-jump-link" title="Go to Shannon Entropy Trend chart">↑ Entropy Chart</a>
+          </h3>
+          <div class="analysis-formula">\[ H(X)=-\sum_{i=0}^{255}p_i\log_2(p_i) \]</div>
+          <p>\(p_i\) is the observed probability (relative frequency) of byte value \(i\). Entropy measures the
+            uncertainty of the byte distribution, in bits per byte, between 0 and 8.</p>
+          <p><b>Interpretation:</b> the maximum, 8, is reached when all 256 values are equally likely. High entropy does
+            <u>not</u> prove encryption: compressed data can also have values close to 8. Entropy depends only on the
+            histogram, so it ignores byte order.
+          </p>
+        </div>
+        <div class="card">
+          <h3>
+            2. Byte Frequency Distribution
+            <a href="#card-chart-byte" class="chart-jump-link" title="Go to Byte Frequency chart">↑ Byte Chart</a>
+          </h3>
+          <div class="analysis-formula">\[ O_i=\#\{k : X_k=i\},\quad i=0,\dots,255 \]</div>
+          <p>A byte takes one of 256 values (0–255). The distribution counts how many times each value appears.</p>
+          <p><b>Interpretation:</b> a uniform distribution has similar counts for all values; a non-uniform one has some
+            values much more frequent than others (typical of text).</p>
+        </div>
+        <div class="card">
+          <h3>
+            3. Bit Distribution
+            <a href="#card-chart-bit" class="chart-jump-link" title="Go to Bit Balance chart">↑ Bit Chart</a>
+          </h3>
+          <div class="analysis-formula">\[ P(1)=\frac{N_1}{N_{\text{bits}}},\qquad P(0)=\frac{N_0}{N_{\text{bits}}} \]
+          </div>
+          <p>Each byte has 8 bits; the program counts bits equal to 0 and to 1 (\(N_{\text{bits}}=8N\)).</p>
+          <p><b>Interpretation:</b> a balanced distribution has both proportions close to 50%. Balance is necessary for
+            random-looking data but not sufficient.</p>
+        </div>
+        <div class="card">
+          <h3>
+            4. Byte Mean and Standard Deviation
+            <a href="#card-stats-summary" class="chart-jump-link" title="Go to Statistical Inference Summary">↑ Summary Card</a>
+          </h3>
+          <p>Bytes are treated as numbers in [0, 255]. The mean is their average value; the standard deviation measures
+            dispersion around it. For a discrete uniform distribution on {0,…,255}:</p>
+          <div class="analysis-formula">\[ \mu=127.5,\qquad \sigma=\sqrt{\tfrac{256^2-1}{12}}\approx 73.90 \]</div>
+          <p><b>Interpretation:</b> these are reference values under uniformity, not values every file must reach. They
+            are not a normality test.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- D. HYPOTHESIS TESTING -->
+    <section class="analysis-section" id="analysis-hypothesis">
+      <h2>D. Statistical Hypothesis Testing</h2>
+      <p class="analysis-lead">The reasoning needed to read the statistical tests in section E and the results tables above.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>1. Null and Alternative Hypotheses</h3>
+          <div class="analysis-h0"><b>H₀ (null):</b> the reference condition of the test.</div>
+          <div class="analysis-h1"><b>H₁ (alternative):</b> the opposite condition.</div>
+          <div class="analysis-table-wrap">
+            <table class="analysis-table">
+              <thead>
+                <tr>
+                  <th>Test</th>
+                  <th>H₀</th>
+                  <th>H₁</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Chi-square</td>
+                  <td>Byte distribution is uniform</td>
+                  <td>Byte distribution is not uniform</td>
+                </tr>
+                <tr>
+                  <td>Bit monobit</td>
+                  <td>P(1) = 0.5</td>
+                  <td>P(1) ≠ 0.5</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="analysis-note">The hypotheses concern specific properties. They do not classify a file as compressed
+            or encrypted.</p>
+        </div>
+        <div class="card">
+          <h3>2. Significance Level</h3>
+          <p>\(\alpha\) is the probability of rejecting H₀ when H₀ is true (false positive rate). The code currently
+            uses:</p>
+          <div class="analysis-formula">\[ \alpha=0.01 \]</div>
+          <p>so the decision threshold is 1%. Even on perfectly uniform data, about 1% of tests will reject H₀ by
+            chance.</p>
+        </div>
+        <div class="card">
+          <h3>3. p-value</h3>
+          <div class="analysis-formula">\[ p=P(\text{result at least as extreme as observed}\mid H_0) \]</div>
+          <ul>
+            <li>If \(p &lt; \alpha\): reject H₀.</li>
+            <li>If \(p \ge \alpha\): do not reject H₀.</li>
+            <li>Not rejecting H₀ does not prove it true.</li>
+          </ul>
+          <div class="analysis-table-wrap">
+            <table class="analysis-table">
+              <caption>Illustrative examples (not project results)</caption>
+              <thead>
+                <tr>
+                  <th>p-value</th>
+                  <th>Decision at α = 0.01</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0.300</td>
+                  <td>Do not reject H₀</td>
+                </tr>
+                <tr>
+                  <td>0.020</td>
+                  <td>Do not reject H₀</td>
+                </tr>
+                <tr>
+                  <td>0.0004</td>
+                  <td>Reject H₀</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>4. Z-score</h3>
+          <div class="analysis-formula">\[ Z=\frac{\text{observed}-\text{expected}}{\text{standard deviation}} \]</div>
+          <p>The Z-score is the distance between an observed result and its expected value, in standard deviations.
+            Under H₀ it is approximately N(0,1); the shaded tails are the rejection region for a two-sided test at α =
+            0.01 (|Z| &gt; 2.576).</p>
+          <figure class="analysis-figure">
+            <svg viewBox="0 0 400 150" role="img"
+              aria-label="Standard normal curve with rejection tails beyond plus and minus 2.576">
+              <path
+                d="M20,130 C60,129 90,125 120,100 C150,55 175,20 200,20 C225,20 250,55 280,100 C310,125 340,129 380,130 Z"
+                fill="#e2e8f0" stroke="#64748b" />
+              <path d="M20,130 C45,129.5 60,128 70,126.5 L70,130 Z" fill="#ef4444" opacity=".6" />
+              <path d="M330,126.5 C340,128 355,129.5 380,130 L330,130 Z" fill="#ef4444" opacity=".6" />
+              <line x1="20" y1="130" x2="380" y2="130" stroke="#0f172a" />
+              <line x1="200" y1="20" x2="200" y2="130" stroke="#0f172a" stroke-dasharray="4" />
+              <text x="200" y="146" text-anchor="middle" font-size="12">0</text>
+              <text x="70" y="146" text-anchor="middle" font-size="12">−2.576</text>
+              <text x="330" y="146" text-anchor="middle" font-size="12">+2.576</text>
+              <text x="50" y="112" text-anchor="middle" font-size="11" fill="#b91c1c">reject H₀</text>
+              <text x="350" y="112" text-anchor="middle" font-size="11" fill="#b91c1c">reject H₀</text>
+            </svg>
+            <figcaption class="analysis-note">Schematic drawing, not to scale.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- E. TESTS -->
+    <section class="analysis-section" id="analysis-tests">
+      <h2>E. Statistical Tests</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>
+            1. Chi-Square Goodness-of-Fit Test
+            <a href="#card-chart-chi" class="chart-jump-link" title="Go to Chi-Square Test Trend chart">↑ Chi-Square Chart</a>
+          </h3>
+          <p><b>Purpose:</b> check whether the byte distribution is compatible with a uniform distribution over 256
+            values.</p>
+          <div class="analysis-h0"><b>H₀:</b> byte distribution is uniform.</div>
+          <div class="analysis-h1"><b>H₁:</b> byte distribution is not uniform.</div>
+          <div class="analysis-formula">\[ E_i=\frac{N}{256},\qquad \chi^2=\sum_{i=0}^{255}\frac{(O_i-E_i)^2}{E_i} \]
+          </div>
+          <p>\(O_i\) is the observed count and \(E_i\) the expected count. There are \(\nu=256-1=255\) degrees of
+            freedom. Under H₀, \(\chi^2\sim\chi^2_{255}\) approximately, and the p-value is the upper tail:</p>
+          <div class="analysis-formula">\[ p=P\left(\chi^2_{255}\ge\chi^2_{\text{obs}}\right) \]</div>
+          <p><b>Conceptual example:</b> for a chunk of N = 1,048,576 bytes, each value is expected \(E_i=4096\) times.
+            Counts close to 4096 for every value give a small \(\chi^2\); strong departures (e.g. many bytes
+            concentrated on few values) give a large \(\chi^2\) and a small p-value.</p>
+          <p><b>Interpretation:</b> the result indicates compatibility or incompatibility with uniformity. It does not
+            identify encryption.</p>
+          <p class="analysis-note"><b>Limits:</b> the approximation needs adequate expected counts (rule of thumb
+            \(E_i\ge5\)); with large N tiny deviations become significant; the test ignores byte order.</p>
+        </div>
+        <div class="card">
+          <h3>
+            2. Bit Monobit Test
+            <a href="#card-chart-bit" class="chart-jump-link" title="Go to Bit Balance chart">↑ Bit Balance Chart</a>
+          </h3>
+          <p><b>Purpose:</b> check the balance between 0 and 1 bits.</p>
+          <div class="analysis-h0"><b>H₀:</b> P(1) = 0.5.</div>
+          <div class="analysis-h1"><b>H₁:</b> P(1) ≠ 0.5.</div>
+          <div class="analysis-formula">\[ Z=\frac{|N_1-N_0|}{\sqrt{n}}=\frac{|2N_1-n|}{\sqrt{n}},\qquad n=8N \]</div>
+          <div class="analysis-formula">\[ p=2\,[1-\Phi(Z)]=\operatorname{erfc}\!\left(\tfrac{Z}{\sqrt2}\right) \]</div>
+          <p>Under H₀, \(N_1\sim\text{Binomial}(n,0.5)\), approximated by a normal distribution for large n (central
+            limit theorem). If \(p&lt;\alpha=0.01\), H₀ is rejected: the bits are not balanced.</p>
+          <p class="analysis-note"><b>Limits:</b> balance is not randomness. A sequence like 0101… is perfectly
+            balanced yet clearly not random; the test detects neither patterns nor dependence between bits.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>
+          3. Additional Distribution Metrics
+          <a href="#card-stats-summary" class="chart-jump-link" title="Go to Statistical Inference Summary">↑ Summary Card</a>
+        </h3>
+        <p class="analysis-note">These are descriptive. They compare observed values with uniform-distribution
+          references and are not standalone statistical tests (and not tests of normality).</p>
+        <div class="analysis-table-wrap">
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>What it measures</th>
+                <th>Why it is useful</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Byte mean</td>
+                <td>Average numeric value of the bytes</td>
+                <td>Text concentrates near ASCII values (well below 127.5); uniform data sits near 127.5</td>
+              </tr>
+              <tr>
+                <td>Byte standard deviation</td>
+                <td>Spread of byte values around the mean</td>
+                <td>Compared with the uniform reference to see how widely values are spread</td>
+              </tr>
+              <tr>
+                <td>Theoretical mean</td>
+                <td>127.5, expected under a uniform distribution</td>
+                <td>Fixed reference point</td>
+              </tr>
+              <tr>
+                <td>Theoretical standard deviation</td>
+                <td>≈ 73.90 under uniformity</td>
+                <td>Fixed reference point</td>
+              </tr>
+              <tr>
+                <td>Observed bin-count standard deviation</td>
+                <td>Spread of the 256 counts \(O_i\) around \(N/256\)</td>
+                <td>Summarises how uneven the histogram is</td>
+              </tr>
+              <tr>
+                <td>Theoretical bin-count standard deviation</td>
+                <td>\(\sqrt{N\cdot\tfrac1{256}\cdot\tfrac{255}{256}}\) (binomial)</td>
+                <td>Expected spread if bytes were uniform and independent</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- F. MULTIFILE START -->
+    <section class="analysis-section" id="analysis-multifile">
+      <h2>F. Multi-file Statistical Analysis</h2>
+      <p class="analysis-lead">
+        How do plaintext, compressed and encrypted data behave across different
+        file types? This section provides an aggregated comparison of six files,
+        examining how their statistical properties change after compression
+        and encryption.
+      </p>
+
+      <div class="analysis-grid-3">
+        <div class="card analysis-kpi">
+          <span class="analysis-kpi-value" id="mf-kpi-files">—</span>
+          <span class="analysis-kpi-label">Files Analysed</span>
+        </div>
+        <div class="card analysis-kpi">
+          <span class="analysis-kpi-value" id="mf-kpi-variants">—</span>
+          <span class="analysis-kpi-label">Data Variants</span>
+        </div>
+        <div class="card analysis-kpi">
+          <span class="analysis-kpi-value" id="mf-kpi-alpha">—</span>
+          <span class="analysis-kpi-label">Significance Level (α)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>1. Dataset Overview</h3>
+        <p>
+          The dataset includes six files representing different data types:
+          <b id="mf-types">—</b>.
+          Each file was analysed in three representations:
+          <b>Plaintext</b> (original data), <b>GZIP</b> (compressed data)
+          and <b>AES-256-CTR</b> (encrypted data).
+        </p>
+        <p>
+          The analysis uses 1 MB chunks, where applicable, and compares
+          the results across files to identify common patterns and differences
+          between the three representations.
+        </p>
+
+        <details class="analysis-details">
+          <summary class="btn-outline">View Dataset Details</summary>
+          <div class="analysis-table-wrap">
+            <table class="analysis-table">
+              <thead>
+                <tr><th>#</th><th>Data Type</th><th>File</th></tr>
+              </thead>
+              <tbody id="mf-files-body"></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" id="card-multifile-entropy">
+          <h3>
+            2. Entropy Comparison
+            <a href="#analysisMultiEntropy" class="chart-jump-link" title="Go to Multi-file Entropy Chart">↓ Multi-file Chart</a>
+            <a href="#card-chart-entropy" class="chart-jump-link" title="Go to Single-file Entropy Chart">↑ Live Chart</a>
+          </h3>
+          <p>
+            Mean entropy across the six files, measured in bits per byte.
+            Each file has equal weight, regardless of its number of chunks.
+            Minimum and maximum values refer to the six file-level means.
+          </p>
+
+          <canvas id="analysisMultiEntropy"></canvas>
+
+          <div class="analysis-table-wrap" style="margin-top: 14px;">
+            <table class="analysis-table">
+              <thead>
+                <tr>
+                  <th>Variant</th>
+                  <th>Mean</th>
+                  <th>Min (files)</th>
+                  <th>Max (files)</th>
+                </tr>
+              </thead>
+              <tbody id="mf-entropy-body"></tbody>
+            </table>
+          </div>
+
+          <p class="analysis-note">
+            Entropy values are based on per-chunk results rounded to three
+            decimal places. Differences smaller than 0.001 bit/byte
+            cannot be resolved.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>
+            3. Statistical Test Results
+            <a href="#card-chart-chi" class="chart-jump-link" title="Go to Chi-Square Chart">↑ Chi-Square Chart</a>
+            <a href="#card-chart-bit" class="chart-jump-link" title="Go to Bit Balance Chart">↑ Bit Chart</a>
+          </h3>
+          <p>
+            Number of files whose <b>median p-value</b> across their chunks
+            leads to rejecting H₀ at α = 0.01.
+            These are file-level counts, not percentages of chunks.
+          </p>
+
+          <div class="analysis-table-wrap">
+            <table class="analysis-table">
+              <thead>
+                <tr>
+                  <th>Variant</th>
+                  <th>Chi-square</th>
+                  <th>Monobit</th>
+                </tr>
+              </thead>
+              <tbody id="mf-tests-body"></tbody>
+            </table>
+          </div>
+
+          <p class="analysis-note">
+            Chi-square tests H₀: uniform byte distribution.
+            Monobit tests H₀: P(1) = 0.5.
+            Rejecting H₀ indicates evidence against the tested property.
+            Not rejecting H₀ does not prove randomness or encryption.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>4. Key Findings</h3>
+        <ul>
+          <li>
+            <b>Compression substantially increases entropy.</b>
+            The average entropy rises from 4.303 bits/byte in plaintext
+            to 7.914 bits/byte after GZIP compression, approaching the
+            theoretical maximum of 8 bits/byte.
+          </li>
+          <li>
+            <b>High entropy does not imply a uniform byte distribution.</b>
+            Despite its high entropy, GZIP is rejected by the Chi-square
+            test in all six files. This shows that entropy alone cannot
+            capture all statistical properties of the data.
+          </li>
+          <li>
+            <b>The Monobit test provides a different perspective.</b>
+            It rejects H₀ for five out of six GZIP files, while the remaining
+            file has a median p-value above the significance threshold.
+            Therefore, bit balance alone does not consistently distinguish
+            compressed from encrypted data.
+          </li>
+          <li>
+            <b>AES results are consistent across the analysed files.</b>
+            None of the six files leads to rejecting H₀ in either test.
+            This is consistent with the expected pseudorandom appearance
+            of encrypted output, but does not establish cryptographic security.
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>5. Limitations</h3>
+        <ul>
+          <li>
+            The dataset contains only six heterogeneous files and is not
+            necessarily representative of all file types.
+          </li>
+          <li>
+            Files have different sizes and numbers of chunks.
+            Chunks belonging to the same file are not independent
+            file-level observations.
+          </li>
+          <li>
+            The median p-value is used as a descriptive summary.
+            Multiple statistical tests increase the overall
+            false-positive probability.
+          </li>
+          <li>
+            Entropy and the selected statistical tests examine only
+            specific statistical properties of the data.
+            They cannot establish cryptographic security or prove randomness.
+          </li>
+        </ul>
+      </div>
+    </section>
+    <!-- MULTIFILE END -->
+
+    <!-- G. DISCUSSION -->
+    <section class="analysis-section analysis-conclusions" id="analysis-discussion">
+      <h2>G. Discussion and Conclusions</h2>
+
+      <h4>
+        1. Entropy Limitations
+        <a href="#card-chart-entropy" class="chart-jump-link" title="Go to Shannon Entropy Trend chart">↑ Entropy Chart</a>
+      </h4>
+      <p>
+        Shannon entropy measures the distribution of byte values and is
+        bounded by 8 bits per byte. Both compressed and encrypted data can
+        approach this maximum, making them difficult to distinguish using
+        entropy alone. Furthermore, entropy ignores byte order and other
+        structural properties. A file that is already compressed, such as
+        a JPEG image or a video, may also exhibit high entropy before
+        any additional transformation.
+      </p>
+
+      <h4>
+        2. Contribution of Additional Statistical Metrics
+        <a href="#card-chart-chi" class="chart-jump-link" title="Go to Chi-Square Test Trend chart">↑ Chi-Square Chart</a>
+        <a href="#card-chart-bit" class="chart-jump-link" title="Go to Bit Balance chart">↑ Bit Chart</a>
+      </h4>
+      <p>
+        Additional metrics provide complementary information about the data.
+        The Chi-square test examines the uniformity of the byte distribution,
+        while the Monobit test evaluates the balance between zeros and ones.
+        Our results show that these tests can reveal differences that entropy
+        alone does not capture. However, they assess only specific statistical
+        properties and cannot identify the transformation applied to a file
+        with certainty.
+      </p>
+
+      <h4>
+        3. Interpretation of the Multi-file Results
+        <a href="#card-multifile-entropy" class="chart-jump-link" title="Go to Multi-file Entropy Comparison">↑ Multi-file Chart</a>
+      </h4>
+      <p>
+        The comparison across six file types confirms that compression
+        substantially increases entropy, with GZIP reaching an average of
+        7.914 bits per byte, compared with 4.303 bits per byte for plaintext.
+        AES-256-CTR reaches 8 bits per byte across all analysed files.
+      </p>
+      <p>
+        Despite the small entropy difference between GZIP and AES,
+        the Chi-square test rejects the uniformity hypothesis for all six
+        GZIP files and for none of the AES files. The Monobit test rejects
+        the bit-balance hypothesis for five GZIP files and none of the AES
+        files. This demonstrates why combining different statistical
+        indicators provides a more informative comparison.
+      </p>
+      <p>
+        These findings are consistent with the expected statistical behaviour
+        of compressed and encrypted data in our experiment. Nevertheless,
+        they should be interpreted as observations about the analysed files,
+        rather than universal properties of every compression or encryption
+        algorithm.
+      </p>
+
+      <h4>4. Experimental Limitations</h4>
+      <ul>
+        <li>
+          The experiment includes six files, which represent a limited
+          and heterogeneous sample.
+        </li>
+        <li>
+          File sizes and chunk counts differ, and chunks from the same
+          file cannot be treated as independent file-level observations.
+        </li>
+        <li>
+          Statistical tests have a false-positive probability determined
+          by α. Running multiple tests requires considering the overall
+          false-positive rate.
+        </li>
+        <li>
+          Large sample sizes can make tests detect very small deviations,
+          while small samples may reduce their statistical power.
+        </li>
+        <li>
+          Not rejecting H₀ means there is insufficient evidence against
+          the tested hypothesis; it does not prove randomness or encryption.
+        </li>
+      </ul>
+
+      <h3>5. Final Answer</h3>
+
+      <p>
+        <strong>
+          Can entropy alone reliably distinguish compressed data
+          from encrypted data?
+        </strong>
+      </p>
+
+      <p>
+        No. Our experiment shows that both compressed and encrypted data
+        can exhibit entropy values very close to the theoretical maximum
+        of 8 bits per byte. Across the six analysed files, GZIP reaches
+        an average entropy of 7.914 bits per byte, while AES-256-CTR
+        reaches 8 bits per byte. Furthermore, some original files,
+        such as the JPEG and video, already have high entropy in their
+        plaintext representation.
+      </p>
+
+      <p>
+        Additional statistical metrics provide useful complementary
+        information. In our dataset, the Chi-square test consistently
+        detects deviations from a uniform byte distribution in GZIP data,
+        whereas none of the AES files leads to rejecting this hypothesis.
+        The Monobit test also identifies differences in most GZIP files,
+        although it does not distinguish every case.
+      </p>
+
+      <p>
+        Therefore, combining entropy with other statistical features
+        provides a more informative way to compare compressed and encrypted
+        data. However, these tests cannot prove that a file is encrypted,
+        establish its security, or identify the transformation that produced
+        it. They only assess specific properties of the observed data.
+      </p>
+
+      <p>
+        Finally, the conclusions are limited to the six files included
+        in our experiment. A broader dataset, with more file types and
+        independent samples, would be necessary to assess whether these
+        observations generalize to other data.
+      </p>
+    </section>
+    <!-- ANALYSIS END -->
+
+  </div>
+
+  <script src="js/dashboard.js"></script>
+  <script src="js/transform.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/multifile.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

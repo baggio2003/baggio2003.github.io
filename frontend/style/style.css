@@ -1,0 +1,368 @@
+/* ==========================================================================
+   UPLOAD, DROPZONE & TERMINAL COMPONENTS
+   Estensione per il Global Stylesheet (Modern Glassmorphic Dark UI)
+   ========================================================================== */
+
+/* ---------- Upload Controls & Badges ---------- */
+.upload-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Ho mantenuto la struttura dei badge ma usando i tuoi colori e le trasparenze */
+.badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+.badge-ready { 
+  background: rgba(16, 185, 129, 0.15); 
+  color: #6ee7b7; 
+  border-color: rgba(16, 185, 129, 0.35); 
+}
+
+.badge-busy { 
+  background: rgba(245, 158, 11, 0.15); 
+  color: #fcd34d; 
+  border-color: rgba(245, 158, 11, 0.35); 
+}
+
+.badge-done { 
+  background: rgba(99, 102, 241, 0.15); 
+  color: #a5b4fc; 
+  border-color: rgba(99, 102, 241, 0.35); 
+}
+
+/* ---------- Dropzone ---------- */
+.dropzone {
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(13, 17, 26, 0.4);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--border-accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.dropzone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone-icon {
+  width: 38px;
+  height: 38px;
+  color: var(--accent-indigo);
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.dropzone:hover .dropzone-icon {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+}
+
+.dropzone-text {
+  font-size: 1rem;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.dropzone-text strong {
+  color: #a5b4fc;
+}
+
+.dropzone-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- File Info Box ---------- */
+.file-info-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  width: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.file-icon-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.file-details {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.file-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ---------- Actions & Buttons ---------- */
+.upload-action-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* Allineati ai tuoi bottoni base (stile primario) */
+.btn, .btn-primary {
+  background: var(--grad-primary);
+  color: #ffffff;
+  padding: 0.75rem 1.45rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92rem;
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  box-shadow: var(--shadow-glow);
+  transition: var(--transition);
+}
+
+.btn:hover:not(:disabled), .btn-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.btn:disabled, .btn-primary:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  box-shadow: none;
+  border: 1px solid var(--border-subtle);
+  cursor: not-allowed;
+}
+
+/* Allineati ai tuoi bottoni secondari/outline */
+.btn-outline, .btn-change-file {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.btn-outline:hover, .btn-change-file:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Progress Bar ---------- */
+.transfer-progress-wrapper {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 8px;
+  background: rgba(13, 17, 26, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--grad-primary);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+}
+
+.progress-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 45px;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* ---------- Terminal Log ---------- */
+.terminal-wrapper {
+  margin-top: 1.5rem;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.terminal-header {
+  background: rgba(18, 24, 38, 0.95);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-red    { background: #ef4444; }
+.dot-yellow { background: #f59e0b; }
+.dot-green  { background: #10b981; }
+
+.terminal-title {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.btn-terminal-clear {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-terminal-clear:hover {
+  color: var(--text-main);
+}
+
+#statusLog {
+  background: rgba(10, 14, 23, 0.6);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  padding: 1.25rem;
+  margin: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  height: 250px;
+  max-height: 350px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+/* Personalizzazione Scrollbar per il log */
+#statusLog::-webkit-scrollbar {
+  width: 8px;
+}
+#statusLog::-webkit-scrollbar-track {
+  background: rgba(13, 17, 26, 0.5); 
+}
+#statusLog::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3); 
+  border-radius: 4px;
+}
+#statusLog::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5); 
+}
+
+/* ---------- Utility / Layout ---------- */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+canvas {
+  width: 100% !important;
+  max-height: 280px;
+}
+
+@media (max-width: 850px) {
+  .grid-2 { 
+    grid-template-columns: 1fr; 
+  }
+}

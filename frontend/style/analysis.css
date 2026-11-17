@@ -1,0 +1,356 @@
+/* ==========================================================================
+   ANALISI STATISTICA (analysis.css)
+   Estensione per il Global Stylesheet (Modern Glassmorphic Dark UI)
+   ========================================================================== */
+
+/* ---------- Sezioni e testo ---------- */
+.analysis-section { 
+  margin-bottom: 2rem; 
+  scroll-margin-top: 1rem; 
+}
+
+.analysis-section h2 { 
+  font-size: 1.25rem; 
+  font-weight: 700; 
+  color: var(--text-main);
+  margin: 0 0 0.5rem; 
+  letter-spacing: -0.02em; 
+}
+
+.analysis-section > h3 { 
+  font-size: 1.05rem; 
+  font-weight: 600; 
+  color: var(--text-main);
+  margin: 1.25rem 0 0.5rem; 
+}
+
+.analysis-section p, 
+.analysis-section ul { 
+  font-size: 0.9rem; 
+  line-height: 1.65; 
+  margin: 0 0 0.75rem; 
+  color: var(--text-secondary);
+}
+
+.analysis-section ul { 
+  padding-left: 1.25rem; 
+}
+
+.analysis-lead, 
+.analysis-note { 
+  color: var(--text-muted); 
+}
+
+.analysis-note { 
+  font-size: 0.85rem; 
+}
+
+.analysis-tag { 
+  display: block; 
+  font-size: 0.75rem; 
+  font-weight: 700; 
+  color: var(--text-muted); 
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem; 
+}
+
+/* ---------- Navigazione ---------- */
+.analysis-nav { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 0.75rem; 
+  margin-bottom: 1.5rem; 
+}
+
+.analysis-nav a { 
+  text-decoration: none; 
+}
+
+/* ---------- Griglia a 3 colonne ---------- */
+.analysis-grid-3 { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 1.5rem; 
+  margin-bottom: 1.5rem; 
+}
+
+@media (max-width: 850px) { 
+  .analysis-grid-3 { grid-template-columns: 1fr; } 
+}
+
+/* ---------- Colori delle varianti (Top Borders luminosi) ---------- */
+.analysis-plain { border-top: 3px solid var(--accent-emerald); }
+.analysis-comp  { border-top: 3px solid #f59e0b; /* Amber per Warning/Comp */ }
+.analysis-enc   { border-top: 3px solid #ef4444; /* Rose/Red per Danger/Enc */ }
+
+/* ---------- Formule ---------- */
+.analysis-formula {
+  background: rgba(10, 14, 23, 0.6); 
+  border: 1px solid var(--border-subtle); 
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem; 
+  margin: 1rem 0; 
+  overflow-x: auto; 
+  text-align: center;
+  font-family: var(--font-mono);
+  color: #a5b4fc;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Ipotesi: H0 (Nulla) e H1 (Alternativa) ---------- */
+.analysis-h0, 
+.analysis-h1 { 
+  border-radius: var(--radius-sm); 
+  padding: 0.75rem 1rem; 
+  margin-bottom: 0.75rem; 
+  font-size: 0.9rem; 
+  background: var(--card-elevated);
+}
+
+.analysis-h0 { 
+  border-left: 4px solid var(--text-muted); 
+  color: var(--text-secondary);
+}
+
+.analysis-h1 { 
+  background: rgba(99, 102, 241, 0.08); 
+  border-left: 4px solid var(--accent-indigo); 
+  color: #e0e7ff;
+}
+
+/* ---------- Domanda di ricerca e avvisi ---------- */
+.analysis-question, 
+.analysis-warning { 
+  border-radius: var(--radius-md); 
+  padding: 1rem 1.25rem; 
+  margin-bottom: 1.5rem; 
+  font-size: 0.9rem; 
+  backdrop-filter: blur(10px);
+}
+
+.analysis-question { 
+  background: rgba(99, 102, 241, 0.12); 
+  border-left: 4px solid var(--accent-indigo); 
+  color: #e0e7ff;
+}
+
+.analysis-question strong { 
+  font-size: 1.05rem; 
+  color: var(--text-main);
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.analysis-warning { 
+  background: rgba(245, 158, 11, 0.1); 
+  border-left: 4px solid #f59e0b; 
+  color: #fde68a;
+}
+
+/* ---------- Tabelle Statistiche ---------- */
+.analysis-table-wrap { 
+  overflow-x: auto; 
+  margin-bottom: 1rem; 
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.analysis-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 0.85rem; 
+}
+
+.analysis-table th, 
+.analysis-table td { 
+  border-bottom: 1px solid var(--border-subtle); 
+  padding: 0.75rem 1rem; 
+  text-align: left; 
+  vertical-align: top; 
+}
+
+.analysis-table th { 
+  background: rgba(22, 28, 45, 0.95); 
+  color: var(--text-main);
+  font-weight: 700; 
+}
+
+.analysis-table td {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.analysis-table tbody tr:nth-child(even) { 
+  background: rgba(255, 255, 255, 0.02); 
+}
+
+.analysis-table tbody tr:hover td {
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.analysis-table caption { 
+  text-align: left; 
+  font-weight: 600; 
+  padding: 0.5rem 1rem; 
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ---------- Risultati calcolati & Badge ---------- */
+.analysis-computed { 
+  font-family: var(--font-mono); 
+  color: #c7d2fe;
+}
+
+.analysis-pending { 
+  color: var(--text-muted); 
+  font-style: italic;
+}
+
+.analysis-interpretation { 
+  border: 1px dashed var(--border-accent); 
+  border-radius: var(--radius-md); 
+  padding: 1rem; 
+  color: var(--text-secondary); 
+  background: rgba(99, 102, 241, 0.03);
+  margin-top: 0.5rem;
+}
+
+.analysis-badge { 
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem; 
+  font-weight: 700; 
+  border-radius: 999px; 
+  padding: 0.25rem 0.65rem; 
+  border: 1px solid; 
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.analysis-badge-reject { 
+  color: #fca5a5; 
+  border-color: rgba(239, 68, 68, 0.4); 
+  background: rgba(239, 68, 68, 0.15); 
+}
+
+.analysis-badge-keep { 
+  color: #6ee7b7; 
+  border-color: rgba(16, 185, 129, 0.4); 
+  background: rgba(16, 185, 129, 0.15); 
+}
+
+.analysis-dot { 
+  display: inline-block; 
+  width: 10px; 
+  height: 10px; 
+  border-radius: 50%; 
+  margin-right: 8px;
+  box-shadow: 0 0 8px currentColor; /* Effetto Glow coerente col colore */
+}
+
+.analysis-dot-plain { background: var(--accent-emerald); color: var(--accent-emerald); }
+.analysis-dot-comp  { background: #f59e0b; color: #f59e0b; }
+.analysis-dot-enc   { background: #ef4444; color: #ef4444; }
+
+/* ---------- Figura Z-score ---------- */
+.analysis-figure { 
+  margin: 1.25rem 0 0; 
+  text-align: center; 
+  background: var(--card-elevated);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.analysis-figure svg { 
+  max-width: 100%; 
+  height: auto; 
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); /* Adatta SVG chiari al tema scuro se necessario */
+}
+
+/* ---------- Conclusioni (Highlight box) ---------- */
+.analysis-conclusions { 
+  border: 1px solid var(--border-accent); 
+  border-radius: var(--radius-lg); 
+  padding: 1.5rem; 
+  background: rgba(99, 102, 241, 0.05); 
+  box-shadow: var(--shadow-glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.analysis-conclusions::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--grad-primary);
+}
+
+/* ---------- KPI e Dettagli Espandibili ---------- */
+.analysis-kpi { 
+  text-align: center; 
+  margin-bottom: 0; 
+}
+
+.analysis-kpi-value { 
+  display: block; 
+  font-size: 2.15rem; 
+  font-weight: 800; 
+  font-family: var(--font-mono);
+  background: var(--grad-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2; 
+  margin-bottom: 0.25rem;
+}
+
+.analysis-kpi-label { 
+  font-size: 0.8rem; 
+  color: var(--text-muted); 
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.analysis-details {
+  background: var(--card-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  transition: var(--transition);
+}
+
+.analysis-details summary { 
+  display: inline-flex; 
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+/* Custom freccia per i details (opzionale ma bella) */
+.analysis-details summary::before {
+  content: '▶';
+  font-size: 0.7rem;
+  color: var(--accent-indigo);
+  transition: transform 0.2s ease;
+}
+
+.analysis-details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.analysis-details[open] summary { 
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
