@@ -6,7 +6,7 @@
     <title>Modes of Convergence &amp; Bayesian Inference | Statistics Lab</title>
     
     <!-- Global Portfolio Stylesheet -->
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../style.css?v=3">
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -453,15 +453,15 @@
             <!-- KPIs -->
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-label">Empirical P(|X&#772;n &minus; &mu;| &gt; &epsilon;)</span>
+                    <span class="stat-label">Empirical P(|X&#772;<sub>n</sub> &minus; &mu;| &gt; &epsilon;)</span>
                     <span class="stat-value" id="kpi-prob-eps" style="color:#34d399;">—</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Chebyshev Bound &sigma;&sup2;/(n&epsilon;&sup2;)</span>
+                    <span class="stat-label" id="kpi-chebyshev-label">Chebyshev Bound (i.i.d.) &sigma;&sup2;/(n&epsilon;&sup2;)</span>
                     <span class="stat-value" id="kpi-chebyshev">—</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Empirical L&sup2; MSE E[(X&#772;n&minus;&mu;)&sup2;]</span>
+                    <span class="stat-label">Empirical L&sup2; MSE E[(X&#772;<sub>n</sub>&minus;&mu;)&sup2;]</span>
                     <span class="stat-value" id="kpi-mse" style="color:#c084fc;">—</span>
                 </div>
                 <div class="stat-item">
@@ -469,7 +469,7 @@
                     <span class="stat-value" id="kpi-theo-var" style="color:#38bdf8;">—</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Empirical SE(X&#772;n) vs &sigma;/&radic;n</span>
+                    <span class="stat-label">Empirical SE(X&#772;<sub>n</sub>) vs &sigma;/&radic;n</span>
                     <span class="stat-value" id="kpi-se-ratio" style="color:#fbbf24;">—</span>
                 </div>
             </div>
@@ -634,7 +634,7 @@
                         <option value="jeffreys">Jeffreys Non-Informative: Beta(0.5, 0.5)</option>
                         <option value="skeptical" selected>Strong Skeptical Prior: Beta(2, 18) [Mean = 0.10]</option>
                         <option value="optimistic">Strong Optimistic Prior: Beta(18, 2) [Mean = 0.90]</option>
-                        <option value="custom">Custom Parameters (&alpha;0, &beta;0)</option>
+                        <option value="custom">Custom Parameters (α₀, β₀)</option>
                     </select>
                 </div>
 
@@ -667,7 +667,7 @@
 
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-label">Prior Mean &alpha;0/(&alpha;0+&beta;0)</span>
+                    <span class="stat-label">Prior Mean &alpha;<sub>0</sub>/(&alpha;<sub>0</sub>+&beta;<sub>0</sub>)</span>
                     <span class="stat-value" id="kpi-prior-mean" style="color:#38bdf8;">—</span>
                 </div>
                 <div class="stat-item">
@@ -712,8 +712,8 @@
                     <input type="range" id="ids-prior" min="0.1" max="30" step="0.1" value="0.5">
                 </div>
                 <div class="input-group">
-                    <label for="ids-tpr">Sensitivity / True Positive Rate P(+|H) (%): <span id="val-ids-tpr">99%</span></label>
-                    <input type="range" id="ids-tpr" min="50" max="99.9" step="0.5" value="99">
+                    <label for="ids-tpr">Sensitivity / True Positive Rate P(+|H) (%): <span id="val-ids-tpr">99.0%</span></label>
+                    <input type="range" id="ids-tpr" min="50" max="99.9" step="0.1" value="99">
                 </div>
                 <div class="input-group">
                     <label for="ids-fpr">False Positive Rate P(+|&not;H) (%): <span id="val-ids-fpr">2.0%</span></label>
@@ -752,7 +752,7 @@
         </section>
 
         <footer>
-            <p>Statistics &amp; Calculus Laboratory &bull; Modes of Convergence, LLN/CLT &amp; Bayesian Inference</p>
+            <p>Statistics Laboratory &bull; Modes of Convergence, LLN/CLT &amp; Bayesian Inference</p>
         </footer>
     </div>
 

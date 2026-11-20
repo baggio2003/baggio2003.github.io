@@ -53,37 +53,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function betaPDF(x, a, b) {
-        if (x <= 0 || x >= 1) return 0;
+        if (x < 0 || x > 1) return 0;
+        if (x === 0) return a > 1 ? 0 : (a === 1 ? b : Infinity);
+        if (x === 1) return b > 1 ? 0 : (b === 1 ? a : Infinity);
         const logNorm = logGamma(a) + logGamma(b) - logGamma(a + b);
         const val = Math.exp((a - 1) * Math.log(x) + (b - 1) * Math.log(1 - x) - logNorm);
         return Number.isFinite(val) ? val : 0;
     }
 
-    // Numerical 95% Credible Interval for Beta(a, b) via cumulative trapezoidal integration
+    // Plot-safe Beta PDF on [0, 1]: uses exact finite endpoint values when a,b >= 1
+    // and clamps boundary singularities (a < 1 or b < 1) via a near-edge sample.
+    function betaPDFPlot(x, a, b) {
+        if (x <= 0) return a >= 1 ? (a === 1 ? b : 0) : betaPDF(0.002, a, b);
+        if (x >= 1) return b >= 1 ? (b === 1 ? a : 0) : betaPDF(0.998, a, b);
+        return betaPDF(x, a, b);
+    }
+
+    // Numerical 95% Credible Interval for Beta(a, b) via midpoint quadrature + linear interpolation
     function betaCredibleInterval95(a, b) {
-        const steps = 1000;
-        const eps = 1e-4;
-        const dx = (1 - 2 * eps) / steps;
-        const xs = new Float64Array(steps + 1);
+        const steps = 4000;
+        const dx = 1.0 / steps;
         const cdf = new Float64Array(steps + 1);
 
-        xs[0] = eps;
-        let prevY = betaPDF(eps, a, b);
-        for (let i = 1; i <= steps; i++) {
-            const x = eps + i * dx;
-            xs[i] = x;
-            const y = betaPDF(x, a, b);
-            cdf[i] = cdf[i - 1] + 0.5 * (prevY + y) * dx;
-            prevY = y;
+        for (let i = 0; i < steps; i++) {
+            const xMid = (i + 0.5) * dx;
+            const y = betaPDF(xMid, a, b);
+            cdf[i + 1] = cdf[i] + (Number.isFinite(y) ? y * dx : 0);
         }
         const total = cdf[steps] || 1;
-        let low = 0, high = 1;
-        for (let i = 0; i <= steps; i++) {
-            const p = cdf[i] / total;
-            if (p <= 0.025) low = xs[i];
-            if (p <= 0.975) high = xs[i];
+
+        function quantile(q) {
+            const target = q * total;
+            for (let i = 1; i <= steps; i++) {
+                if (cdf[i] >= target) {
+                    const prev = cdf[i - 1];
+                    const frac = cdf[i] > prev ? (target - prev) / (cdf[i] - prev) : 0;
+                    return ((i - 1) + frac) * dx;
+                }
+            }
+            return 1;
         }
-        return [low, high];
+        return [quantile(0.025), quantile(0.975)];
     }
 
     // Helper: generate evenly spaced sample indices including exact endpoint nMax
@@ -135,9 +145,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const nMax = parseInt(document.getElementById("conv-n").value, 10);
         const M = parseInt(document.getElementById("conv-m").value, 10);
         const eps = parseFloat(document.getElementById("conv-eps").value);
-        const rho = parseFloat(document.getElementById("conv-rho").value);
+        const rhoSlider = document.getElementById("conv-rho");
+        const rhoLabel = document.getElementById("val-conv-rho");
+        const rawRho = parseFloat(rhoSlider.value);
 
         const cfg = distConfig[distKey];
+        const rho = cfg.finite ? rawRho : 0;
+        rhoSlider.disabled = !cfg.finite;
+        rhoLabel.textContent = !cfg.finite
+            ? "N/A (Cauchy)"
+            : (rawRho === 0 ? "0.00 (i.i.d.)" : rawRho.toFixed(2));
+
         const sigma = cfg.finite ? Math.sqrt(cfg.variance) : 1.0;
 
         // Track 12 sample paths for a.s. visualization
@@ -188,18 +206,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const empProbEps = exceedCounts[nMax - 1] / M;
         const empMSE = sqErrSums[nMax - 1] / M;
         const empSE = Math.sqrt(empMSE);
+        const chebLabelEl = document.getElementById("kpi-chebyshev-label");
 
         document.getElementById("kpi-prob-eps").textContent = (empProbEps * 100).toFixed(2) + "%";
         if (cfg.finite) {
-            const chebBound = Math.min(1, cfg.variance / (nMax * eps * eps));
             const theoVarIid = cfg.variance / nMax;
+            const theoVarDep = cfg.variance * (rho + (1 - rho) / nMax);
+            const chebBound = Math.min(1, (rho > 0 ? theoVarDep : theoVarIid) / (eps * eps));
             const theoSeIid = sigma / Math.sqrt(nMax);
 
+            chebLabelEl.innerHTML = rho > 0
+                ? "Chebyshev Bound (Dependent)"
+                : "Chebyshev Bound (i.i.d.) &sigma;&sup2;/(n&epsilon;&sup2;)";
             document.getElementById("kpi-chebyshev").textContent = (chebBound * 100).toFixed(2) + "%";
             document.getElementById("kpi-mse").textContent = empMSE.toFixed(5);
             document.getElementById("kpi-theo-var").textContent = theoVarIid.toFixed(5);
             document.getElementById("kpi-se-ratio").textContent = `${empSE.toFixed(4)} / ${theoSeIid.toFixed(4)}`;
         } else {
+            chebLabelEl.innerHTML = "Chebyshev Bound &sigma;&sup2;/(n&epsilon;&sup2;)";
             document.getElementById("kpi-chebyshev").textContent = "Undefined (∞)";
             document.getElementById("kpi-mse").textContent = empMSE > 1e4 ? empMSE.toExponential(2) : empMSE.toFixed(2);
             document.getElementById("kpi-theo-var").textContent = "∞ (Diverges)";
@@ -226,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Render all 4 convergence charts
         renderAsPathsChart(samplePaths, nMax, cfg, eps);
-        renderProbAndL2Chart(exceedCounts, sqErrSums, M, nMax, cfg, eps);
+        renderProbAndL2Chart(exceedCounts, sqErrSums, M, nMax, cfg, eps, rho);
         renderCltDistChart(finalMeans, nMax, cfg, rho);
         renderSqrtScalingChart(sqErrSums, M, nMax, cfg, rho);
     }
@@ -297,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function renderProbAndL2Chart(exceedCounts, sqErrSums, M, nMax, cfg, eps) {
+    function renderProbAndL2Chart(exceedCounts, sqErrSums, M, nMax, cfg, eps, rho) {
         const ctx = document.getElementById("chart-prob-l2").getContext("2d");
         if (chartProbL2) chartProbL2.destroy();
 
@@ -305,6 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const labels = [];
         const empProb = [];
         const cheb = [];
+        const chebDep = [];
         const empL2 = [];
 
         for (const k of idxList) {
@@ -313,6 +338,10 @@ document.addEventListener("DOMContentLoaded", () => {
             empProb.push(exceedCounts[k] / M);
             if (cfg.finite) {
                 cheb.push(Math.min(1.0, cfg.variance / (nVal * eps * eps)));
+                if (rho > 0) {
+                    const varDep = cfg.variance * (rho + (1 - rho) / nVal);
+                    chebDep.push(Math.min(1.0, varDep / (eps * eps)));
+                }
                 empL2.push(sqErrSums[k] / M);
             }
         }
@@ -333,13 +362,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (cfg.finite) {
             datasets.push({
-                label: "Chebyshev Upper Bound σ² / (k·ε²)",
+                label: "Chebyshev Bound (i.i.d.) σ² / (k·ε²)",
                 data: cheb,
                 borderColor: "#fbbf24",
                 borderDash: [5, 4],
                 borderWidth: 1.8,
                 pointRadius: 0
             });
+            if (rho > 0) {
+                datasets.push({
+                    label: `Dependent Chebyshev Bound [ρ=${rho.toFixed(2)}]`,
+                    data: chebDep,
+                    borderColor: "#f43f5e",
+                    borderDash: [3, 3],
+                    borderWidth: 1.8,
+                    pointRadius: 0
+                });
+            }
             datasets.push({
                 label: "Empirical L² MSE E[(X̄_k − μ)²]",
                 data: empL2,
@@ -371,28 +410,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (chartCltDist) chartCltDist.destroy();
 
         const sigma = cfg.finite ? Math.sqrt(cfg.variance) : 1.0;
-        const zVals = [];
-        for (let i = 0; i < finalMeans.length; i++) {
-            const z = cfg.finite
-                ? Math.sqrt(nMax) * (finalMeans[i] - cfg.mu) / sigma
-                : finalMeans[i]; // Cauchy unscaled
-            if (z >= -4.5 && z <= 4.5) zVals.push(z);
-        }
-
         const numBins = 24;
         const minX = -4.0, maxX = 4.0;
         const binW = (maxX - minX) / numBins;
         const counts = new Int32Array(numBins);
+        let inRange = 0;
 
-        for (const z of zVals) {
-            const idx = Math.floor((z - minX) / binW);
-            if (idx >= 0 && idx < numBins) counts[idx]++;
+        for (let i = 0; i < finalMeans.length; i++) {
+            const z = cfg.finite
+                ? Math.sqrt(nMax) * (finalMeans[i] - cfg.mu) / sigma
+                : finalMeans[i]; // Cauchy unscaled
+            if (z >= minX && z <= maxX) {
+                const idx = Math.min(numBins - 1, Math.floor((z - minX) / binW));
+                counts[idx]++;
+                inRange++;
+            }
         }
+
+        const total = finalMeans.length;
+        const outPct = ((total - inRange) / total) * 100;
+        const outNote = outPct >= 1 ? ` (${outPct.toFixed(0)}% outside [-4, 4])` : "";
+        const isDependent = cfg.finite && rho > 0;
 
         const binCenters = [];
         const densities = [];
         const normCurve = [];
-        const total = finalMeans.length;
 
         for (let b = 0; b < numBins; b++) {
             const center = minX + (b + 0.5) * binW;
@@ -409,11 +451,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     {
                         type: "bar",
                         label: cfg.finite
-                            ? `Empirical Density of √n(X̄_n − μ)/σ (n=${nMax})`
-                            : `Empirical Density of Cauchy X̄_n (Clamped [-4, 4])`,
+                            ? `Empirical Density of √n(X̄_n − μ)/σ (n=${nMax})${outNote}`
+                            : `Empirical Density of Cauchy X̄_n${outNote}`,
                         data: densities,
-                        backgroundColor: rho > 0 ? "rgba(244, 63, 94, 0.45)" : "rgba(56, 189, 248, 0.45)",
-                        borderColor: rho > 0 ? "#f43f5e" : "#38bdf8",
+                        backgroundColor: isDependent ? "rgba(244, 63, 94, 0.45)" : "rgba(56, 189, 248, 0.45)",
+                        borderColor: isDependent ? "#f43f5e" : "#38bdf8",
                         borderWidth: 1,
                         barPercentage: 1.0,
                         categoryPercentage: 1.0
@@ -555,25 +597,34 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("kpi-post-ci").textContent = `[${ciLow.toFixed(3)}, ${ciHigh.toFixed(3)}]`;
         document.getElementById("kpi-weight-split").textContent = `${(priorWeight * 100).toFixed(0)}% / ${(dataWeight * 100).toFixed(0)}%`;
 
-        // 1. Plot Prior, Scaled Likelihood, and Posterior densities on (0, 1)
-        const gridN = 120;
+        // 1. Plot Prior, Scaled Likelihood, and Posterior densities on [0, 1]
+        const gridN = 200;
         const labels = [];
         const priorCurve = [];
         const postCurve = [];
         const rawLik = [];
         let maxPost = 0;
 
-        for (let i = 1; i < gridN; i++) {
+        for (let i = 0; i <= gridN; i++) {
             const theta = i / gridN;
             labels.push(theta.toFixed(2));
-            const pPrior = betaPDF(theta, a0, b0);
-            const pPost = betaPDF(theta, aPost, bPost);
+            const pPrior = betaPDFPlot(theta, a0, b0);
+            const pPost = betaPDFPlot(theta, aPost, bPost);
             priorCurve.push(pPrior);
             postCurve.push(pPost);
             if (pPost > maxPost) maxPost = pPost;
 
-            // Log-stable likelihood shape theta^k * (1-theta)^(n-k)
-            const logL = n > 0 ? (k * Math.log(theta) + (n - k) * Math.log(1 - theta)) : 0;
+            // Log-stable likelihood shape theta^k * (1-theta)^(n-k) including exact endpoints
+            let logL = 0;
+            if (n > 0) {
+                if (theta === 0) {
+                    logL = k === 0 ? 0 : -Infinity;
+                } else if (theta === 1) {
+                    logL = k === n ? 0 : -Infinity;
+                } else {
+                    logL = k * Math.log(theta) + (n - k) * Math.log(1 - theta);
+                }
+            }
             rawLik.push(logL);
         }
 
@@ -581,58 +632,65 @@ document.addEventListener("DOMContentLoaded", () => {
         const maxLogL = Math.max(...rawLik);
         const scaledLik = rawLik.map(ll => {
             if (n === 0) return 1.0;
+            if (!Number.isFinite(ll)) return 0;
             const val = Math.exp(ll - maxLogL);
             return val * Math.max(maxPost, 1.5);
         });
 
-        const ctxPost = document.getElementById("chart-beta-posterior").getContext("2d");
-        if (chartBetaPosterior) chartBetaPosterior.destroy();
-
-        chartBetaPosterior = new Chart(ctxPost, {
-            type: "line",
-            data: {
-                labels,
-                datasets: [
-                    {
-                        label: `Prior Beta(${a0}, ${b0})`,
-                        data: priorCurve,
-                        borderColor: "#38bdf8",
-                        backgroundColor: "rgba(56, 189, 248, 0.12)",
-                        fill: true,
-                        borderWidth: 2,
-                        pointRadius: 0
-                    },
-                    {
-                        label: n > 0 ? `Scaled Likelihood Binom(n=${n}, k=${k})` : "Likelihood (No Data Yet)",
-                        data: scaledLik,
-                        borderColor: "#fbbf24",
-                        borderDash: [6, 4],
-                        borderWidth: 2,
-                        pointRadius: 0
-                    },
-                    {
-                        label: `Posterior Beta(${aPost}, ${bPost})`,
-                        data: postCurve,
-                        borderColor: "#10b981",
-                        backgroundColor: "rgba(16, 185, 129, 0.22)",
-                        fill: true,
-                        borderWidth: 2.5,
-                        pointRadius: 0
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: "Prior, Scaled Likelihood & Posterior Density over θ ∈ [0, 1]", color: "#f8fafc" }
+        const betaPostData = {
+            labels,
+            datasets: [
+                {
+                    label: `Prior Beta(${a0}, ${b0})`,
+                    data: priorCurve,
+                    borderColor: "#38bdf8",
+                    backgroundColor: "rgba(56, 189, 248, 0.12)",
+                    fill: true,
+                    borderWidth: 2,
+                    pointRadius: 0
                 },
-                scales: {
-                    x: { title: { display: true, text: "Parameter θ" }, ticks: { maxTicksLimit: 11 } },
-                    y: { beginAtZero: true, title: { display: true, text: "Density p(θ)" } }
+                {
+                    label: n > 0 ? `Scaled Likelihood Binom(n=${n}, k=${k})` : "Likelihood (No Data Yet)",
+                    data: scaledLik,
+                    borderColor: "#fbbf24",
+                    borderDash: [6, 4],
+                    borderWidth: 2,
+                    pointRadius: 0
+                },
+                {
+                    label: `Posterior Beta(${aPost}, ${bPost})`,
+                    data: postCurve,
+                    borderColor: "#10b981",
+                    backgroundColor: "rgba(16, 185, 129, 0.22)",
+                    fill: true,
+                    borderWidth: 2.5,
+                    pointRadius: 0
                 }
-            }
-        });
+            ]
+        };
+
+        if (chartBetaPosterior) {
+            chartBetaPosterior.data = betaPostData;
+            chartBetaPosterior.update("none");
+        } else {
+            const ctxPost = document.getElementById("chart-beta-posterior").getContext("2d");
+            chartBetaPosterior = new Chart(ctxPost, {
+                type: "line",
+                data: betaPostData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        title: { display: true, text: "Prior, Scaled Likelihood & Posterior Density over θ ∈ [0, 1]", color: "#f8fafc" }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: "Parameter θ" }, ticks: { maxTicksLimit: 11 } },
+                        y: { beginAtZero: true, title: { display: true, text: "Density p(θ)" } }
+                    }
+                }
+            });
+        }
 
         // 2. Plot Prior Sensitivity & Asymptotic Convergence (competing priors as n grows)
         const observedRate = n > 0 ? k / n : 0.70;
@@ -642,64 +700,72 @@ document.addEventListener("DOMContentLoaded", () => {
         const trajOptimistic = nSteps.map(ni => (18 + ni * observedRate) / (20 + ni));
         const trajCurrent = nSteps.map(ni => (a0 + ni * observedRate) / (a0 + b0 + ni));
 
-        const ctxSens = document.getElementById("chart-prior-sensitivity").getContext("2d");
-        if (chartPriorSensitivity) chartPriorSensitivity.destroy();
-
-        chartPriorSensitivity = new Chart(ctxSens, {
-            type: "line",
-            data: {
-                labels: nSteps,
-                datasets: [
-                    {
-                        label: "Uniform Prior Beta(1,1)",
-                        data: trajUniform,
-                        borderColor: "#38bdf8",
-                        borderWidth: 2,
-                        pointRadius: 2
-                    },
-                    {
-                        label: "Skeptical Prior Beta(2,18)",
-                        data: trajSkeptical,
-                        borderColor: "#f43f5e",
-                        borderWidth: 2,
-                        pointRadius: 2
-                    },
-                    {
-                        label: "Optimistic Prior Beta(18,2)",
-                        data: trajOptimistic,
-                        borderColor: "#c084fc",
-                        borderWidth: 2,
-                        pointRadius: 2
-                    },
-                    {
-                        label: `Active Prior Beta(${a0},${b0})`,
-                        data: trajCurrent,
-                        borderColor: "#10b981",
-                        borderWidth: 2.6,
-                        pointRadius: 3
-                    },
-                    {
-                        label: `Data MLE Rate (${observedRate.toFixed(2)})`,
-                        data: nSteps.map(() => observedRate),
-                        borderColor: "#fbbf24",
-                        borderDash: [5, 5],
-                        borderWidth: 1.8,
-                        pointRadius: 0
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: "Prior Sensitivity: Posterior Mean Convergence as Sample Size n Grows", color: "#f8fafc" }
+        const sensData = {
+            labels: nSteps,
+            datasets: [
+                {
+                    label: "Uniform Prior Beta(1,1)",
+                    data: trajUniform,
+                    borderColor: "#38bdf8",
+                    borderWidth: 2,
+                    pointRadius: 2
                 },
-                scales: {
-                    x: { title: { display: true, text: "Sample Size n" } },
-                    y: { min: 0, max: 1, title: { display: true, text: "Posterior Mean E[θ | D]" } }
+                {
+                    label: "Skeptical Prior Beta(2,18)",
+                    data: trajSkeptical,
+                    borderColor: "#f43f5e",
+                    borderWidth: 2,
+                    pointRadius: 2
+                },
+                {
+                    label: "Optimistic Prior Beta(18,2)",
+                    data: trajOptimistic,
+                    borderColor: "#c084fc",
+                    borderWidth: 2,
+                    pointRadius: 2
+                },
+                {
+                    label: `Active Prior Beta(${a0},${b0})`,
+                    data: trajCurrent,
+                    borderColor: "#10b981",
+                    borderWidth: 2.6,
+                    pointRadius: 3
+                },
+                {
+                    label: n > 0
+                        ? `Data MLE Rate (${observedRate.toFixed(2)})`
+                        : `Assumed Reference Rate (${observedRate.toFixed(2)})`,
+                    data: nSteps.map(() => observedRate),
+                    borderColor: "#fbbf24",
+                    borderDash: [5, 5],
+                    borderWidth: 1.8,
+                    pointRadius: 0
                 }
-            }
-        });
+            ]
+        };
+
+        if (chartPriorSensitivity) {
+            chartPriorSensitivity.data = sensData;
+            chartPriorSensitivity.update("none");
+        } else {
+            const ctxSens = document.getElementById("chart-prior-sensitivity").getContext("2d");
+            chartPriorSensitivity = new Chart(ctxSens, {
+                type: "line",
+                data: sensData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        title: { display: true, text: "Prior Sensitivity: Posterior Mean Convergence as Sample Size n Grows", color: "#f8fafc" }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: "Sample Size n" } },
+                        y: { min: 0, max: 1, title: { display: true, text: "Posterior Mean E[θ | D]" } }
+                    }
+                }
+            });
+        }
     }
 
     /* =========================================================================
@@ -741,38 +807,43 @@ document.addEventListener("DOMContentLoaded", () => {
             insight.innerHTML = `<strong>High-Confidence Detection:</strong> With prior prevalence ${(prior * 100).toFixed(1)}% and Bayes Factor ${bayesFactor.toFixed(1)}×, a single positive alert already raises the posterior probability to <strong>${(seqProbs[1] * 100).toFixed(2)}%</strong>, reaching <strong>${(seqProbs[2] * 100).toFixed(2)}%</strong> after a second corroborating alert.`;
         }
 
-        const ctxIds = document.getElementById("chart-ids-seq").getContext("2d");
-        if (chartIdsSeq) chartIdsSeq.destroy();
-
-        chartIdsSeq = new Chart(ctxIds, {
-            type: "bar",
-            data: {
-                labels: ["Prior (0 Alerts)", "After 1st Alert", "After 2nd Alert", "After 3rd Alert", "After 4th Alert"],
-                datasets: [{
-                    label: "Posterior Probability P(Attack | Alerts) (%)",
-                    data: seqProbs.map(p => +(p * 100).toFixed(2)),
-                    backgroundColor: [
-                        "rgba(56, 189, 248, 0.55)",
-                        "rgba(244, 63, 94, 0.55)",
-                        "rgba(168, 85, 247, 0.55)",
-                        "rgba(16, 185, 129, 0.55)",
-                        "rgba(16, 185, 129, 0.80)"
-                    ],
-                    borderColor: ["#38bdf8", "#f43f5e", "#a855f7", "#10b981", "#34d399"],
-                    borderWidth: 1.8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: "Sequential Bayesian Updating: Posterior P(H | Data) Across Independent Alerts", color: "#f8fafc" }
+        const idsData = seqProbs.map(p => +(p * 100).toFixed(2));
+        if (chartIdsSeq) {
+            chartIdsSeq.data.datasets[0].data = idsData;
+            chartIdsSeq.update("none");
+        } else {
+            const ctxIds = document.getElementById("chart-ids-seq").getContext("2d");
+            chartIdsSeq = new Chart(ctxIds, {
+                type: "bar",
+                data: {
+                    labels: ["Prior (0 Alerts)", "After 1st Alert", "After 2nd Alert", "After 3rd Alert", "After 4th Alert"],
+                    datasets: [{
+                        label: "Posterior Probability P(Attack | Alerts) (%)",
+                        data: idsData,
+                        backgroundColor: [
+                            "rgba(56, 189, 248, 0.55)",
+                            "rgba(244, 63, 94, 0.55)",
+                            "rgba(168, 85, 247, 0.55)",
+                            "rgba(16, 185, 129, 0.55)",
+                            "rgba(16, 185, 129, 0.80)"
+                        ],
+                        borderColor: ["#38bdf8", "#f43f5e", "#a855f7", "#10b981", "#34d399"],
+                        borderWidth: 1.8
+                    }]
                 },
-                scales: {
-                    y: { beginAtZero: true, max: 100, title: { display: true, text: "Probability (%)" } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        title: { display: true, text: "Sequential Bayesian Updating: Posterior P(H | Data) Across Independent Alerts", color: "#f8fafc" }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: "Probability (%)" } }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /* =========================================================================
@@ -793,6 +864,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("conv-rho").addEventListener("input", e => {
         const v = parseFloat(e.target.value);
         document.getElementById("val-conv-rho").textContent = v === 0 ? "0.00 (i.i.d.)" : v.toFixed(2);
+    });
+    ["conv-n", "conv-m", "conv-eps", "conv-rho"].forEach(id => {
+        document.getElementById(id).addEventListener("change", runConvergenceSimulation);
     });
     document.getElementById("btn-run-conv").addEventListener("click", runConvergenceSimulation);
     document.getElementById("btn-reset-iid").addEventListener("click", () => {
