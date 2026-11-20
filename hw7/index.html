@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modes of Convergence &amp; Bayesian Inference | Statistics Lab</title>
+    
+    <!-- Global Portfolio Stylesheet -->
+    <link rel="stylesheet" href="../style.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Prevent display:flex on .card h2 from breaking inline math */
+        .card h2 {
+            display: block;
+        }
+
+        /* Safe isolation and horizontal scrolling for display MathJax blocks */
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block !important;
+            margin: 0.85rem 0 !important;
+            padding: 0.5rem 0.4rem !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.6rem;
+        }
+        .section-badge.purple {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+        .section-badge.emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .section-badge.amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+        .section-badge.rose {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border-color: rgba(244, 63, 94, 0.35);
+        }
+
+        .derivation-box {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 4px solid #38bdf8;
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .derivation-box p {
+            margin-bottom: 0.65rem;
+            font-size: 0.92rem;
+        }
+        .derivation-box p:last-child {
+            margin-bottom: 0;
+        }
+        .derivation-box.accent-purple { border-left-color: #a855f7; }
+        .derivation-box.accent-emerald { border-left-color: #10b981; }
+        .derivation-box.accent-amber { border-left-color: #f59e0b; }
+        .derivation-box.accent-rose { border-left-color: #f43f5e; }
+
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+        .theory-card {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.6rem;
+            padding: 1.35rem;
+            overflow-x: auto;
+        }
+        .theory-card h4 {
+            margin-top: 0;
+            margin-bottom: 0.65rem;
+            color: #38bdf8;
+            font-size: 1.02rem;
+            line-height: 1.4;
+        }
+        .theory-card p, .theory-card li {
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .theory-card p {
+            margin-bottom: 0.7rem;
+        }
+        .theory-card p:last-child {
+            margin-bottom: 0;
+        }
+        .theory-card ul {
+            padding-left: 1.2rem;
+            margin-top: 0.35rem;
+        }
+        .theory-card li {
+            margin-bottom: 0.45rem;
+        }
+
+        .formula-pill {
+            background: rgba(9, 13, 22, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.45rem;
+            padding: 0.55rem 0.75rem;
+            margin: 0.7rem 0;
+            text-align: center;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .hierarchy-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: rgba(9, 13, 22, 0.75);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 0.6rem;
+            padding: 1.2rem;
+            margin: 1.2rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+        }
+        .hier-node {
+            padding: 0.5rem 0.9rem;
+            border-radius: 0.45rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            text-align: center;
+        }
+        .hier-arrow {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .charts-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(410px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 360px;
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            padding: 1rem;
+        }
+
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1.25rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+            text-align: left;
+        }
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+            vertical-align: top;
+        }
+        .data-table th {
+            color: #38bdf8;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.85);
+            font-family: var(--font-sans);
+        }
+        .data-table td {
+            font-family: var(--font-sans);
+            line-height: 1.55;
+        }
+        .data-table td.mono {
+            font-family: var(--font-mono);
+            font-size: 0.84rem;
+        }
+
+        .insight-banner {
+            padding: 1.15rem 1.4rem;
+            border-radius: var(--radius-md);
+            margin-top: 1.25rem;
+            border-left: 4px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
+            font-size: 0.9rem;
+        }
+        .insight-banner.warn {
+            border-left-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.1);
+        }
+        .insight-banner.success {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #6366f1;
+            cursor: pointer;
+        }
+
+        @media (max-width: 680px) {
+            .charts-two-col, .theory-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="../index.html" class="back-link">&larr; Back to Portfolio</a>
+            <h1>Modes of Convergence &amp; Bayesian Inference</h1>
+            <p class="subtitle">Part 1: Stochastic Convergence, LLN, CLT &amp; the &radic;n Law &bull; Part 2: Conditional Probability, Bayes' Theorem &amp; Prior–Likelihood–Posterior Dynamics</p>
+        </header>
+
+        <!-- ==================== PART 1: MODES OF CONVERGENCE (THEORY) ==================== -->
+        <section class="card">
+            <span class="section-badge">Part 1 &bull; Probability Theory</span>
+            <h2>1. Main Modes of Convergence &amp; Their Roles in LLN and CLT</h2>
+            <p style="margin-bottom: 1rem;">
+                Unlike real sequences $\{a_n\}$, a sequence of random variables $\{X_n\}_{n \ge 1}$ consists of measurable functions $X_n : \Omega \to \mathbb{R}$ defined on a probability space $(\Omega, \mathcal{A}, \mathbb{P})$. Consequently, there is no single notion of limit: different modes capture progressively stronger guarantees on sample paths, probabilities, moments, or cumulative distributions.
+            </p>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4 style="color: #38bdf8;">1. Almost Sure Convergence ($X_n \xrightarrow{\text{a.s.}} X$)</h4>
+                    <p>
+                        The strongest pointwise notion: the set of sample paths $\omega \in \Omega$ on which $X_n(\omega)$ converges to $X(\omega)$ has probability $1$:
+                    </p>
+                    <div class="formula-pill">
+                        $\mathbb{P}\!\left(\left\{\omega \in \Omega : \lim_{n \to \infty} X_n(\omega) = X(\omega)\right\}\right) = 1$
+                    </div>
+                    <p>
+                        <strong>Role in Statistics:</strong> Governs the <strong>Strong Law of Large Numbers (SLLN)</strong> ($\bar{X}_n \xrightarrow{\text{a.s.}} \mu$ when $\mathbb{E}[|X_1|] &lt; \infty$) and <em>strong consistency</em> of estimators (e.g., Glivenko-Cantelli Theorem for empirical CDFs). Once $n$ is large enough, a single observed trajectory stays permanently inside any $\varepsilon$-tube around $\mu$.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #c084fc;">2. Mean-Square / $L^2$ Convergence ($X_n \xrightarrow{L^2} X$)</h4>
+                    <p>
+                        Convergence in the Hilbert space $L^2(\Omega, \mathcal{A}, \mathbb{P})$: the expected squared error (Mean Squared Error) vanishes as $n \to \infty$:
+                    </p>
+                    <div class="formula-pill">
+                        $\lim_{n \to \infty} \mathbb{E}\!\left[(X_n - X)^2\right] = 0$
+                    </div>
+                    <p>
+                        <strong>Role in Statistics:</strong> Directly links to the <strong>Bias–Variance Decomposition</strong> $\text{MSE}(\hat{\theta}_n) = \text{Bias}^2(\hat{\theta}_n) + \text{Var}(\hat{\theta}_n) \to 0$. Used to prove the $L^2$ Law of Large Numbers (when $\sigma^2 &lt; \infty$), minimum-variance linear estimation, and stochastic calculus (It&ocirc; integrals).
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #34d399;">3. Convergence in Probability ($X_n \xrightarrow{P} X$)</h4>
+                    <p>
+                        For every tolerance $\varepsilon &gt; 0$, the probability of observing a deviation larger than $\varepsilon$ at step $n$ vanishes:
+                    </p>
+                    <div class="formula-pill">
+                        $\forall \varepsilon &gt; 0, \quad \lim_{n \to \infty} \mathbb{P}\!\left(|X_n - X| &gt; \varepsilon\right) = 0$
+                    </div>
+                    <p>
+                        <strong>Role in Statistics:</strong> Governs the <strong>Weak Law of Large Numbers (WLLN)</strong> ($\bar{X}_n \xrightarrow{P} \mu$, proved via Chebyshev's inequality when $\sigma^2 &lt; \infty$, or characteristic functions when $\mathbb{E}[|X_1|] &lt; \infty$) and defines <strong>weak consistency</strong> of estimators ($\hat{\theta}_n \xrightarrow{P} \theta$). Unlike a.s. convergence, rare excursions beyond $\varepsilon$ can still recur infinitely often on a given path.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #fbbf24;">4. Convergence in Distribution ($X_n \xrightarrow{d} X$)</h4>
+                    <p>
+                        The weakest mode: only the cumulative distribution functions $F_{X_n}(x)$ converge to $F_X(x)$ at every continuity point $x$ of $F_X$:
+                    </p>
+                    <div class="formula-pill">
+                        $\lim_{n \to \infty} F_{X_n}(x) = F_X(x) \quad \forall x \text{ where } F_X \text{ is continuous}$
+                    </div>
+                    <p>
+                        <strong>Role in Statistics:</strong> Governs the <strong>Central Limit Theorem (CLT)</strong>: $\frac{\sqrt{n}(\bar{X}_n - \mu)}{\sigma} \xrightarrow{d} \mathcal{N}(0, 1)$. Notice that $X_n$ and $X$ need not even live on the same probability space—only their laws converge. Together with <strong>Slutsky's Theorem</strong> and the <strong>Delta Method</strong>, it underpins asymptotic confidence intervals and hypothesis tests.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Implication Hierarchy -->
+            <div class="hierarchy-diagram">
+                <div class="hier-node" style="background: rgba(56,189,248,0.15); color: #38bdf8;">Almost Sure (a.s.)</div>
+                <span class="hier-arrow">&rArr;</span>
+                <div class="hier-node" style="background: rgba(16,185,129,0.15); color: #34d399;">In Probability (P)</div>
+                <span class="hier-arrow">&lArr;</span>
+                <div class="hier-node" style="background: rgba(168,85,247,0.15); color: #c084fc;">Mean-Square (L&sup2;)</div>
+                <span class="hier-arrow">&nbsp;|&nbsp;</span>
+                <div class="hier-node" style="background: rgba(16,185,129,0.15); color: #34d399;">In Probability (P)</div>
+                <span class="hier-arrow">&rArr;</span>
+                <div class="hier-node" style="background: rgba(245,158,11,0.15); color: #fbbf24;">In Distribution (d)</div>
+            </div>
+
+            <!-- Comparative Summary Table -->
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Key Implication &amp; Non-Implication</th>
+                            <th>Core Theorem / Statistical Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="mono" style="color:#38bdf8;">a.s.</td>
+                            <td>$\text{a.s.} \implies P \implies d$. Does <strong>not</strong> imply $L^2$ (counterexample: $X_n = n$ w.p. $1/n^2$, else $0$ has $X_n \xrightarrow{\text{a.s.}} 0$ by Borel-Cantelli, yet $\mathbb{E}[X_n^2] = 1 \not\to 0$).</td>
+                            <td><strong>Strong LLN (Kolmogorov):</strong> Guarantees that a single long-run empirical average converges to $\mu$ with probability $1$.</td>
+                        </tr>
+                        <tr>
+                            <td class="mono" style="color:#c084fc;">$L^2$</td>
+                            <td>$L^2 \implies P \implies d$ (via Markov/Chebyshev). Does <strong>not</strong> imply a.s. (counterexample: sliding "typewriter" indicator intervals of shrinking width $1/k$).</td>
+                            <td><strong>MSE Consistency:</strong> $\text{Var}(\bar{X}_n) = \sigma^2/n \to 0$ gives an explicit $\mathcal{O}(1/n)$ convergence rate for squared error.</td>
+                        </tr>
+                        <tr>
+                            <td class="mono" style="color:#34d399;">$P$</td>
+                            <td>Implies $d$; converse ($d \implies P$) holds <strong>only</strong> when the limit $X = c$ is a degenerate constant.</td>
+                            <td><strong>Weak LLN &amp; Consistency:</strong> $\hat{\theta}_n \xrightarrow{P} \theta$; also enables <strong>Slutsky's Theorem</strong> ($X_n \xrightarrow{d} X, Y_n \xrightarrow{P} c \implies X_n/Y_n \xrightarrow{d} X/c$).</td>
+                        </tr>
+                        <tr>
+                            <td class="mono" style="color:#fbbf24;">$d$</td>
+                            <td>Weakest mode; describes convergence of probability laws (CDFs / characteristic functions via L&eacute;vy's Continuity Theorem).</td>
+                            <td><strong>Central Limit Theorem &amp; Asymptotic Normality:</strong> Quantifies the distribution of estimation errors around $\mu$ for $p$-values and CIs.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Why sqrt(n) Appears & Role of Independence -->
+            <div class="derivation-box accent-amber" style="margin-top: 1.5rem;">
+                <h3 style="color: #fbbf24; font-size: 1.05rem; margin-bottom: 0.6rem;">Why Does $\sqrt{n}$ Appear Everywhere? Variance Additivity &amp; Independence</h3>
+                <p>
+                    Consider a sample $X_1, \dots, X_n$ with common mean $\mu$ and finite variance $\sigma^2 &lt; \infty$. For the sample sum $S_n = \sum_{i=1}^n X_i$, the exact variance identity (Biénaymé's formula) is:
+                </p>
+                $$
+                \text{Var}(S_n) = \text{Var}\!\left(\sum_{i=1}^n X_i\right) = \sum_{i=1}^n \text{Var}(X_i) + 2 \sum_{1 \le i &lt; j \le n} \text{Cov}(X_i, X_j)
+                $$
+                <p>
+                    <strong>1. Variance Additivity — Pairwise Uncorrelatedness vs. Full Independence:</strong> When all $\binom{n}{2}$ pairwise covariances vanish ($\text{Cov}(X_i, X_j) = 0$), variance becomes strictly <strong>additive</strong>, growing linearly as $\mathcal{O}(n)$:
+                </p>
+                $$
+                \text{Var}(S_n) = n\sigma^2 \implies \text{SD}(S_n) = \sigma\sqrt{n} \implies \text{Var}(\bar{X}_n) = \frac{\sigma^2}{n}, \quad \text{SE}(\bar{X}_n) = \frac{\sigma}{\sqrt{n}}
+                $$
+                <p>
+                    Crucially, <em>pairwise uncorrelatedness</em> is sufficient for variance additivity and for the $L^2$ / Chebyshev Weak LLN, whereas the <strong>Central Limit Theorem requires full independence</strong> (or strict weak-dependence/mixing conditions): independence is what allows the characteristic function of the sum to factorize into a product, $\varphi_{S_n}(t) = \prod_{i=1}^n \varphi_{X_i}(t) = [\varphi_X(t)]^n$, so that the second-order Taylor term $e^{-t^2/2}$ emerges in the limit.
+                </p>
+                <p>
+                    <strong>2. Why $\sqrt{n}$ Is the Unique Critical Scaling Factor:</strong> To obtain a non-degenerate limiting distribution for the centered error $(\bar{X}_n - \mu)$, we scale it by $n^\gamma$ so its variance stabilizes to a positive finite constant. Since $\text{Var}\!\left(n^\gamma (\bar{X}_n - \mu)\right) = n^{2\gamma - 1}\sigma^2$:
+                </p>
+                $$
+                n^{2\gamma - 1}\sigma^2 \xrightarrow{n \to \infty}
+                \begin{cases}
+                    0 &amp; \text{if } \gamma &lt; \frac{1}{2} \quad (\text{collapses to } 0, \text{ e.g. LLN at } \gamma = 0) \\
+                    \sigma^2 \in (0, \infty) &amp; \text{if } \gamma = \frac{1}{2} \quad (\text{CLT critical window: } \sqrt{n}(\bar{X}_n - \mu) \xrightarrow{d} \mathcal{N}(0,\sigma^2)) \\
+                    +\infty &amp; \text{if } \gamma &gt; \frac{1}{2} \quad (\text{fluctuations explode to } \pm\infty)
+                \end{cases}
+                $$
+                <p>
+                    <strong>3. Consequence in Statistical Inference &amp; Breakdown Under Dependence:</strong> Under i.i.d. sampling, confidence interval half-widths shrink as $z_{\alpha/2}\frac{\sigma}{\sqrt{n}}$—meaning halving estimation uncertainty requires <strong>$4\times$ more data</strong> (diminishing returns). However, if observations share a positive pairwise correlation $\text{Corr}(X_i, X_j) = \rho &gt; 0$ (e.g., common-shock dependence), the $\mathcal{O}(n^2)$ covariance terms dominate:
+                </p>
+                $$
+                \text{Var}(\bar{X}_n) = \frac{\sigma^2}{n} + \frac{n-1}{n}\rho\sigma^2 \xrightarrow{n \to \infty} \rho\sigma^2 &gt; 0
+                $$
+                <p>
+                    Here the $\sqrt{n}$ law breaks completely: $\bar{X}_n$ fails even to be consistent! In autocorrelated time-series or network telemetry, the effective sample size $n_{\text{eff}} &lt; n$ replaces $n$ in the standard error.
+                </p>
+            </div>
+        </section>
+
+        <!-- ==================== PART 1: INTERACTIVE CONVERGENCE LAB ==================== -->
+        <section class="card">
+            <span class="section-badge emerald">Part 1 &bull; Interactive Lab</span>
+            <h2>2. Empirical Simulator: Convergence Modes &amp; the $\sqrt{n}$ Independence Law</h2>
+            <p>
+                Simulate $M$ parallel trajectories of length $n$ to simultaneously inspect Almost Sure paths ($\bar{X}_k$), Convergence in Probability ($P(|\bar{X}_k - \mu| &gt; \varepsilon)$ vs. Chebyshev's bound), $L^2$ MSE decay ($\sigma^2/k$), CLT convergence in distribution, and how injecting common-shock dependence ($\rho &gt; 0$) destroys the $1/\sqrt{n}$ rate.
+            </p>
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="conv-dist">Data-Generating Distribution</label>
+                    <select id="conv-dist">
+                        <option value="bernoulli" selected>Bernoulli(p = 0.5) [&mu;=0.5, &sigma;&sup2;=0.25]</option>
+                        <option value="exponential">Exponential(&lambda; = 1) [&mu;=1.0, &sigma;&sup2;=1.0, Skewed]</option>
+                        <option value="uniform">Uniform(0, 4) [&mu;=2.0, &sigma;&sup2;=1.333]</option>
+                        <option value="cauchy">Cauchy(0, 1) [Infinite Mean &amp; Variance — LLN/CLT Fail!]</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="conv-n">Max Sample Size (n): <span id="val-conv-n">200</span></label>
+                    <input type="range" id="conv-n" min="40" max="500" step="20" value="200">
+                </div>
+
+                <div class="input-group">
+                    <label for="conv-m">Monte Carlo Trajectories (M): <span id="val-conv-m">300</span></label>
+                    <input type="range" id="conv-m" min="100" max="800" step="50" value="300">
+                </div>
+
+                <div class="input-group">
+                    <label for="conv-eps">Tolerance (&epsilon;): <span id="val-conv-eps">0.15</span></label>
+                    <input type="range" id="conv-eps" min="0.05" max="0.50" step="0.05" value="0.15">
+                </div>
+
+                <div class="input-group">
+                    <label for="conv-rho">Pairwise Dependence (&rho;): <span id="val-conv-rho">0.00 (i.i.d.)</span></label>
+                    <input type="range" id="conv-rho" min="0" max="0.60" step="0.05" value="0">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="btn-run-conv">Run Convergence Simulation</button>
+                <button id="btn-reset-iid" class="secondary">Reset to i.i.d. (&rho; = 0)</button>
+            </div>
+
+            <!-- KPIs -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Empirical P(|X&#772;n &minus; &mu;| &gt; &epsilon;)</span>
+                    <span class="stat-value" id="kpi-prob-eps" style="color:#34d399;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Chebyshev Bound &sigma;&sup2;/(n&epsilon;&sup2;)</span>
+                    <span class="stat-value" id="kpi-chebyshev">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Empirical L&sup2; MSE E[(X&#772;n&minus;&mu;)&sup2;]</span>
+                    <span class="stat-value" id="kpi-mse" style="color:#c084fc;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Theoretical &sigma;&sup2;/n (i.i.d.)</span>
+                    <span class="stat-value" id="kpi-theo-var" style="color:#38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Empirical SE(X&#772;n) vs &sigma;/&radic;n</span>
+                    <span class="stat-value" id="kpi-se-ratio" style="color:#fbbf24;">—</span>
+                </div>
+            </div>
+
+            <div id="conv-insight" class="insight-banner"></div>
+
+            <!-- 4 Diagnostic Charts -->
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-as-paths"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-prob-l2"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-clt-dist"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-sqrt-scaling"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PART 2: CONDITIONAL PROBABILITY & BAYES (THEORY) ==================== -->
+        <section class="card">
+            <span class="section-badge purple">Part 2 &bull; Bayesian Inference</span>
+            <h2>3. Conditional Probability, Bayes' Theorem &amp; Posterior Updating</h2>
+            <p style="margin-bottom: 1rem;">
+                Conditional probability formalizes how new information reshapes uncertainty. Its inversion via <strong>Bayes' Theorem</strong> forms the mathematical engine of Bayesian statistical inference, turning unknown parameters into probability distributions that evolve coherently as data accumulates.
+            </p>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4>Conditional Probability: Probability Theory vs. Statistics</h4>
+                    <p>
+                        <strong>In Probability Theory (Axiomatic):</strong> On $(\Omega, \mathcal{A}, \mathbb{P})$, for any event $B$ with $\mathbb{P}(B) &gt; 0$, the conditional probability restricts the sample space to $B$ and renormalizes total probability to $1$:
+                    </p>
+                    <div class="formula-pill">
+                        $\mathbb{P}(A \mid B) = \frac{\mathbb{P}(A \cap B)}{\mathbb{P}(B)}$
+                    </div>
+                    <p>
+                        <strong>In Statistics (Inference):</strong> Conditional probability connects hidden model parameters $\theta$ to observable data $\mathcal{D}$. Frequentist statistics fixes $\theta$ and studies only the sampling distribution $p(\mathcal{D} \mid \theta)$; <strong>Bayesian statistics</strong> treats $\theta$ itself as a random variable and uses conditioning to invert the arrow from $p(\mathcal{D} \mid \theta)$ to $p(\theta \mid \mathcal{D})$.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4>Derivation of Bayes' Theorem</h4>
+                    <p>
+                        By symmetry of the multiplication rule $\mathbb{P}(A \cap B) = \mathbb{P}(A \mid B)\mathbb{P}(B) = \mathbb{P}(B \mid A)\mathbb{P}(A)$, dividing by $\mathbb{P}(B) &gt; 0$ and expanding $\mathbb{P}(B)$ via the Law of Total Probability over a partition $\{H_i\}$ yields:
+                    </p>
+                    <div class="formula-pill">
+                        $\mathbb{P}(H_k \mid \mathcal{D}) = \frac{\mathbb{P}(\mathcal{D} \mid H_k)\,\mathbb{P}(H_k)}{\sum_i \mathbb{P}(\mathcal{D} \mid H_i)\,\mathbb{P}(H_i)}$
+                    </div>
+                    <p>
+                        For a continuous parameter $\theta \in \Theta$ with density $p(\theta)$:
+                    </p>
+                    <div class="formula-pill">
+                        $p(\theta \mid \mathcal{D}) = \frac{p(\mathcal{D} \mid \theta)\,p(\theta)}{\int_{\Theta} p(\mathcal{D} \mid \theta')\,p(\theta')\,d\theta'} \propto \mathcal{L}(\theta; \mathcal{D}) \cdot p(\theta)$
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Three Pillars -->
+            <div class="theory-grid" style="margin-top: 1.25rem;">
+                <div class="theory-card" style="border-top: 3px solid #38bdf8;">
+                    <h4 style="color: #38bdf8;">1. Prior Probability $p(\theta)$</h4>
+                    <p>
+                        Encodes epistemic uncertainty, physical constraints, or historical domain knowledge about $\theta$ <em>before</em> observing the current dataset $\mathcal{D}$.
+                    </p>
+                    <ul>
+                        <li><strong>Non-informative / Weakly informative:</strong> e.g., Uniform $\text{Beta}(1,1)$ or Jeffreys $\text{Beta}(0.5, 0.5)$ when prior knowledge is minimal.</li>
+                        <li><strong>Informative:</strong> Concentrates probability mass where previous studies or physical laws expect $\theta$ to lie.</li>
+                    </ul>
+                </div>
+
+                <div class="theory-card" style="border-top: 3px solid #fbbf24;">
+                    <h4 style="color: #fbbf24;">2. Likelihood Function $\mathcal{L}(\theta; \mathcal{D}) = p(\mathcal{D} \mid \theta)$</h4>
+                    <p>
+                        Evaluates how probable the <em>fixed</em> observed dataset $\mathcal{D}$ is as a function of the candidate parameter $\theta$.
+                    </p>
+                    <ul>
+                        <li><strong>Crucial distinction:</strong> Viewed as a function of $\theta$, $\mathcal{L}(\theta; \mathcal{D})$ is <em>not</em> a probability density over $\theta$ (it does not integrate to $1$).</li>
+                        <li>Carries all information extracted from the sample; its maximum gives the Frequentist MLE $\hat{\theta}_{\text{MLE}}$.</li>
+                    </ul>
+                </div>
+
+                <div class="theory-card" style="border-top: 3px solid #10b981;">
+                    <h4 style="color: #34d399;">3. Posterior Probability $p(\theta \mid \mathcal{D})$</h4>
+                    <p>
+                        The updated probability distribution over $\theta$ after reweighting the prior by the likelihood and dividing by the marginal evidence $p(\mathcal{D})$.
+                    </p>
+                    <ul>
+                        <li><strong>Sequential Coherence:</strong> Today's posterior $p(\theta \mid \mathcal{D}_1)$ automatically becomes tomorrow's prior when new data $\mathcal{D}_2$ arrives:
+                        $p(\theta \mid \mathcal{D}_1, \mathcal{D}_2) \propto p(\mathcal{D}_2 \mid \theta)\,p(\theta \mid \mathcal{D}_1)$.</li>
+                        <li>Yields direct probability statements (<strong>95% Credible Intervals</strong>) rather than repeated-sampling Frequentist CIs.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Canonical Continuous Example: Normal-Normal Conjugate -->
+            <div class="derivation-box accent-emerald" style="margin-top: 1.5rem;">
+                <h3 style="color: #34d399; font-size: 1.05rem; margin-bottom: 0.6rem;">Canonical Continuous Example: Normal–Normal Precision Updating (Gaussian Mean Estimation)</h3>
+                <p>
+                    Beyond proportions (Beta–Binomial below), suppose we observe i.i.d. continuous measurements $X_1, \dots, X_n \mid \mu \sim \mathcal{N}(\mu, \sigma^2)$ (known variance $\sigma^2$, e.g., network latency jitter) and place a Gaussian prior $\mu \sim \mathcal{N}(\mu_0, \tau_0^2)$. Defining <em>precision</em> as inverse variance ($\lambda_0 = 1/\tau_0^2$, $\lambda_{\text{data}} = n/\sigma^2$), Bayes' theorem yields a Gaussian posterior $\mu \mid \mathcal{D} \sim \mathcal{N}(\mu_n, \tau_n^2)$ where precisions add and the posterior mean is a precision-weighted average:
+                </p>
+                $$
+                \frac{1}{\tau_n^2} = \frac{1}{\tau_0^2} + \frac{n}{\sigma^2}, \qquad
+                \mu_n = \frac{\frac{1}{\tau_0^2}\,\mu_0 + \frac{n}{\sigma^2}\,\bar{x}}{\frac{1}{\tau_0^2} + \frac{n}{\sigma^2}}
+                $$
+                <p>
+                    Note how a tighter prior ($\tau_0^2 \to 0$) pulls $\mu_n$ toward $\mu_0$ (acting exactly like $L_2$ / Ridge shrinkage in Machine Learning), while larger sample size ($n \to \infty$) drives $\mu_n \to \bar{x}$ and $\tau_n^2 \to \sigma^2/n$.
+                </p>
+            </div>
+
+            <!-- Advantages vs Limitations & Influence on Statistical Conclusions -->
+            <div class="theory-grid" style="margin-top: 1.25rem;">
+                <div class="theory-card" style="border-left: 3px solid #10b981;">
+                    <h4 style="color: #34d399;">Applications &amp; Key Advantages</h4>
+                    <ul>
+                        <li><strong>Real-World Applications:</strong> Intrusion detection &amp; spam filtering (Na&iuml;ve Bayes / alert triage), sequential A/B testing, clinical diagnostics, Kalman/particle filtering, and probabilistic ML regularization (Gaussian prior &harr; $L_2$ Ridge; Laplace prior &harr; $L_1$ Lasso).</li>
+                        <li><strong>Exact Finite-Sample Inference:</strong> Provides full parameter uncertainty $p(\theta \mid \mathcal{D})$ even at very small $n$, without relying purely on CLT asymptotics.</li>
+                        <li><strong>Online Sequential Updating &amp; Intuition:</strong> Seamlessly assimilates streaming data and yields direct epistemic probabilities (e.g., $\mathbb{P}(\theta \in [a,b] \mid \mathcal{D}) = 0.95$).</li>
+                    </ul>
+                </div>
+
+                <div class="theory-card" style="border-left: 3px solid #f43f5e;">
+                    <h4 style="color: #fb7185;">Limitations &amp; Influence on Conclusions</h4>
+                    <ul>
+                        <li><strong>Small-Sample Prior Sensitivity:</strong> When $n$ is small, an overly confident mis-specified prior can dominate the likelihood and bias conclusions; assigning $p(\theta) = 0$ (violating <em>Cromwell's Rule</em>) makes data unable to ever revise that belief.</li>
+                        <li><strong>Asymptotic Dominance (Bernstein–von Mises):</strong> As $n \to \infty$, the likelihood sharpens at rate $1/\sqrt{n}$ and overwhelms any smooth non-zero prior, causing distinct priors to converge to the same posterior.</li>
+                        <li><strong>Computational Intractability:</strong> Outside conjugate pairs, computing the marginal evidence $\int p(\mathcal{D}\mid\theta)p(\theta)\,d\theta$ requires numerical sampling (MCMC / HMC) or Variational Inference.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PART 2A: BETA-BINOMIAL CONJUGATE LAB ==================== -->
+        <section class="card">
+            <span class="section-badge emerald">Part 2A &bull; Continuous Conjugate Example</span>
+            <h2>4. Interactive Beta–Binomial Updating &amp; Prior Sensitivity</h2>
+            <p>
+                Consider estimating an unknown success probability $\theta \in [0, 1]$ (e.g., vulnerability exploit rate or click-through probability). Pairing a conjugate <strong>$\text{Beta}(\alpha_0, \beta_0)$ Prior</strong> with a <strong>$\text{Binomial}(n, k)$ Likelihood</strong> yields an exact analytical <strong>$\text{Beta}(\alpha_0 + k, \beta_0 + n - k)$ Posterior</strong>:
+            </p>
+            <div class="formula-pill">
+                $p(\theta \mid k, n) \propto \underbrace{\theta^k (1 - \theta)^{n - k}}_{\text{Likelihood}} \cdot \underbrace{\theta^{\alpha_0 - 1} (1 - \theta)^{\beta_0 - 1}}_{\text{Prior}} = \theta^{(\alpha_0 + k) - 1}(1 - \theta)^{(\beta_0 + n - k) - 1} \implies \theta \mid \mathcal{D} \sim \text{Beta}(\alpha_0 + k,\; \beta_0 + n - k)$
+            </div>
+            <p style="margin-top: 0.75rem;">
+                Its posterior mean decomposes algebraically into a <strong>convex combination</strong> of the prior mean and the Frequentist MLE $\hat{\theta}_{\text{MLE}} = k/n$, showing directly how prior pseudo-counts $(\alpha_0 + \beta_0)$ compete with observed sample size $n$:
+            </p>
+            $$
+            \mathbb{E}[\theta \mid \mathcal{D}] = \frac{\alpha_0 + k}{\alpha_0 + \beta_0 + n} = \underbrace{\frac{\alpha_0 + \beta_0}{\alpha_0 + \beta_0 + n}}_{w_{\text{prior}}} \cdot \underbrace{\frac{\alpha_0}{\alpha_0 + \beta_0}}_{\text{Prior Mean}} + \underbrace{\frac{n}{\alpha_0 + \beta_0 + n}}_{w_{\text{data}}} \cdot \underbrace{\frac{k}{n}}_{\text{MLE}}
+            $$
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="bayes-prior-preset">Prior Belief Preset</label>
+                    <select id="bayes-prior-preset">
+                        <option value="uniform">Uniform / Flat: Beta(1, 1) [No Prior Bias]</option>
+                        <option value="jeffreys">Jeffreys Non-Informative: Beta(0.5, 0.5)</option>
+                        <option value="skeptical" selected>Strong Skeptical Prior: Beta(2, 18) [Mean = 0.10]</option>
+                        <option value="optimistic">Strong Optimistic Prior: Beta(18, 2) [Mean = 0.90]</option>
+                        <option value="custom">Custom Parameters (&alpha;0, &beta;0)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="bayes-alpha">Prior &alpha;<sub>0</sub>: <span id="val-bayes-alpha">2</span></label>
+                    <input type="range" id="bayes-alpha" min="0.5" max="30" step="0.5" value="2">
+                </div>
+
+                <div class="input-group">
+                    <label for="bayes-beta">Prior &beta;<sub>0</sub>: <span id="val-bayes-beta">18</span></label>
+                    <input type="range" id="bayes-beta" min="0.5" max="30" step="0.5" value="18">
+                </div>
+
+                <div class="input-group">
+                    <label for="bayes-n">Observed Trials (n): <span id="val-bayes-n">20</span></label>
+                    <input type="range" id="bayes-n" min="0" max="200" step="1" value="20">
+                </div>
+
+                <div class="input-group">
+                    <label for="bayes-k">Observed Successes (k): <span id="val-bayes-k">14</span></label>
+                    <input type="range" id="bayes-k" min="0" max="20" step="1" value="14">
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button id="btn-seq-add10">Sequential Update: Observe +10 Trials (&theta;<sub>true</sub> = 0.70)</button>
+                <button id="btn-seq-add50" class="secondary">Observe +50 Trials (&theta;<sub>true</sub> = 0.70)</button>
+                <button id="btn-seq-reset" class="secondary">Reset Data (n = 0)</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Prior Mean &alpha;0/(&alpha;0+&beta;0)</span>
+                    <span class="stat-value" id="kpi-prior-mean" style="color:#38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Frequentist MLE (k/n)</span>
+                    <span class="stat-value" id="kpi-mle" style="color:#fbbf24;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Posterior Mean E[&theta;|D]</span>
+                    <span class="stat-value" id="kpi-post-mean" style="color:#34d399;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">95% Credible Interval</span>
+                    <span class="stat-value" id="kpi-post-ci" style="font-size:1.15rem; color:#c084fc;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Prior vs. Data Weight</span>
+                    <span class="stat-value" id="kpi-weight-split" style="font-size:1.15rem;">—</span>
+                </div>
+            </div>
+
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-beta-posterior"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-prior-sensitivity"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PART 2B: DISCRETE BAYES BASE-RATE LAB ==================== -->
+        <section class="card">
+            <span class="section-badge rose">Part 2B &bull; Discrete Bayes Example</span>
+            <h2>5. Discrete Bayes' Theorem: Base-Rate Fallacy in Intrusion Detection (IDS)</h2>
+            <p>
+                A classic real-world demonstration of how the <strong>Prior</strong> governs conclusions: suppose an Intrusion Detection System (or medical test) has $99\%$ sensitivity $P(\text{Alert} \mid \text{Attack})$ and only $2\%$ false-positive rate $P(\text{Alert} \mid \text{Benign})$, but actual attacks are rare (low prior prevalence $P(\text{Attack}) = 0.5\%$). Adjust the parameters below to observe how a single alert can still be mostly false positives—and how <strong>sequential independent alerts</strong> rapidly drive the posterior toward $100\%$.
+            </p>
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="ids-prior">Prior Attack Prevalence P(H) (%): <span id="val-ids-prior">0.5%</span></label>
+                    <input type="range" id="ids-prior" min="0.1" max="30" step="0.1" value="0.5">
+                </div>
+                <div class="input-group">
+                    <label for="ids-tpr">Sensitivity / True Positive Rate P(+|H) (%): <span id="val-ids-tpr">99%</span></label>
+                    <input type="range" id="ids-tpr" min="50" max="99.9" step="0.5" value="99">
+                </div>
+                <div class="input-group">
+                    <label for="ids-fpr">False Positive Rate P(+|&not;H) (%): <span id="val-ids-fpr">2.0%</span></label>
+                    <input type="range" id="ids-fpr" min="0.1" max="20" step="0.1" value="2.0">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Prior P(H)</span>
+                    <span class="stat-value" id="ids-kpi-prior" style="color:#38bdf8;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bayes Factor (TPR / FPR)</span>
+                    <span class="stat-value" id="ids-kpi-bf" style="color:#fbbf24;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Posterior After 1 Alert</span>
+                    <span class="stat-value" id="ids-kpi-p1" style="color:#fb7185;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Posterior After 2 Alerts</span>
+                    <span class="stat-value" id="ids-kpi-p2" style="color:#c084fc;">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Posterior After 3 Alerts</span>
+                    <span class="stat-value" id="ids-kpi-p3" style="color:#34d399;">—</span>
+                </div>
+            </div>
+
+            <div id="ids-insight" class="insight-banner"></div>
+
+            <div class="chart-wrapper" style="margin-top: 1.5rem; min-height: 330px;">
+                <canvas id="chart-ids-seq"></canvas>
+            </div>
+        </section>
+
+        <footer>
+            <p>Statistics &amp; Calculus Laboratory &bull; Modes of Convergence, LLN/CLT &amp; Bayesian Inference</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
