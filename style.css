@@ -249,6 +249,19 @@ h1 {
   transform: translateY(-2px);
 }
 
+.btn-link.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.btn-link.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  box-shadow: none;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;
