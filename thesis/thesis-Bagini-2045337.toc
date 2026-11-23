@@ -1,0 +1,20 @@
+\contentsline {section}{\numberline {1}Introduction and Statistical Traffic Model}{1}{section.0.1}%
+\contentsline {subsection}{\numberline {1.1}Probabilistic Formulation and Detection Hypotheses}{1}{subsection.0.1.1}%
+\contentsline {section}{\numberline {2}Streaming Flow Statistics: Welford's and Chan's Algorithms}{1}{section.0.2}%
+\contentsline {subsection}{\numberline {2.1}Catastrophic Cancellation in IEEE 754 Floating-Point Arithmetic}{2}{subsection.0.2.1}%
+\contentsline {subsection}{\numberline {2.2}Inductive Derivation of Welford's Online Recurrence}{2}{subsection.0.2.2}%
+\contentsline {subsection}{\numberline {2.3}Chan's Parallel Partition Theorem for Distributed Probes}{3}{subsection.0.2.3}%
+\contentsline {section}{\numberline {3}Fixed-Window Anomaly Detection via LLN and CLT}{3}{section.0.3}%
+\contentsline {subsection}{\numberline {3.1}Concentration Inequalities and the First Borel-Cantelli Lemma}{4}{subsection.0.3.1}%
+\contentsline {subsection}{\numberline {3.2}Weak and Strong Laws of Large Numbers (WLLN and SLLN)}{4}{subsection.0.3.2}%
+\contentsline {subsection}{\numberline {3.3}Central Limit Theorem and Studentized Welford Detector}{5}{subsection.0.3.3}%
+\contentsline {subsection}{\numberline {3.4}Fixed-Window Sample Size for Port Scan Detection}{5}{subsection.0.3.4}%
+\contentsline {section}{\numberline {4}Sequential Online Detection: Threshold Random Walk}{6}{section.0.4}%
+\contentsline {subsection}{\numberline {4.1}Recursive Log-Likelihood Ratio Formulation}{6}{subsection.0.4.1}%
+\contentsline {subsection}{\numberline {4.2}Analytical Derivation of Wald's Stopping Boundaries}{6}{subsection.0.4.2}%
+\contentsline {subsection}{\numberline {4.3}Almost Sure Termination and Expected Stopping Time via SLLN}{7}{subsection.0.4.3}%
+\contentsline {section}{\numberline {5}Experimental Evaluation and Numerical Benchmarks}{7}{section.0.5}%
+\contentsline {subsection}{\numberline {5.1}Experiment 1: Numerical Stability of Streaming Variance Estimators}{8}{subsection.0.5.1}%
+\contentsline {subsection}{\numberline {5.2}Experiment 2: Port Scan Detection Latency (Fixed-Window vs.\ TRW)}{9}{subsection.0.5.2}%
+\contentsline {section}{\numberline {6}Conclusions and Operational Extensions}{10}{section.0.6}%
+\contentsline {section}{Bibliography}{10}{section*.6}%

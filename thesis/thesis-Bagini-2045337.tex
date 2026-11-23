@@ -25,9 +25,26 @@
 \renewcommand{\thesection}{\arabic{section}}
 \makeatletter
 \@addtoreset{section}{part}
+% Make top-level sections flush-left and bold in the Table of Contents (article style)
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty{\@secpenalty}%
+    \addvspace{0.8em \@plus\p@}%
+    \setlength\@tempdima{1.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.8em}{2.6em}}
 % Make bibliography use \section* instead of \chapter* to avoid page breaks
 \renewenvironment{thebibliography}[1]{%
   \section*{\bibname}%
+  \addcontentsline{toc}{section}{\bibname}%
   \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}%
   \small
   \list{\@biblabel{\@arabic\c@enumiv}}%
@@ -116,6 +133,8 @@ High-throughput Network Intrusion Detection Systems (NIDS) operating on modern b
 
 This paper investigates the mathematical and statistical foundations of real-time network anomaly and port-scan detection by unifying streaming numerical algorithms, asymptotic probability theory, and sequential analysis. First, we perform a forward and backward error analysis of sample variance computation in IEEE~754 arithmetic, quantifying the quadratic condition-number amplification of naive one-pass estimators and proving by mathematical induction both Welford's online recurrence and Chan's parallel partition theorem for distributed probes. Second, we establish the concentration bounds (Markov's and Chebyshev's inequalities, the First Borel-Cantelli Lemma) underlying the Weak Law of Large Numbers (WLLN), Cantelli's fourth-moment Strong Law of Large Numbers (SLLN), and the L\'evy-Lindeberg Central Limit Theorem (CLT). Combining these guarantees with Slutsky's Theorem, we formulate studentized fixed-window anomaly detectors and derive closed-form asymptotic sample sizes $N_{\mathrm{CLT}}$, contrasting them against exact finite-sample Binomial bounds $N_{\mathrm{Bin}}$. Third, to minimize detection latency, we formulate online port-scan detection as Wald's Sequential Probability Ratio Test (SPRT), known in network security as the Threshold Random Walk (TRW). We derive Wald's stopping inequalities from first principles and combine Gibbs' inequality with the SLLN to prove strictly positive Kullback-Leibler drift under attack and almost sure finite termination ($\Prob(\tau < \infty) = 1$). Reproducible Python benchmarks validate the numerical stability of Welford's and Chan's algorithms across eight orders of magnitude of clock offset and confirm a $1.4\times$ to $2.2\times$ reduction in average detection latency over optimal fixed-window Binomial tests (up to $2.6\times$ on aggressive scan bursts) while preserving prescribed False Positive ($\alpha$) and False Negative ($\beta$) guarantees.
 \end{abstract}
+
+\tableofcontents
 
 % ====================================================================
 % MAINMATTER (Arabic Numbering: Strictly within the 10-page body limit)

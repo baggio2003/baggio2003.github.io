@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.10.21)  23 NOV 2026 16:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=pdflatex 2026.10.21)  23 NOV 2026 16:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -920,24 +920,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 (./thesis-Bagini-2045337.aux)
 \openout1 = `thesis-Bagini-2045337.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 123.
+LaTeX Font Info:    ... okay on input line 123.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -1000,14 +1000,14 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Info: Redefining \textsubscript on input line 106.
-LaTeX Info: Redefining \microtypecontext on input line 106.
-Package microtype Info: Applying patch `item' on input line 106.
-Package microtype Info: Applying patch `toc' on input line 106.
-Package microtype Info: Applying patch `eqnum' on input line 106.
-Package microtype Info: Applying patch `footnote' on input line 106.
-Package microtype Info: Applying patch `verbatim' on input line 106.
-LaTeX Info: Redefining \microtypesetup on input line 106.
+LaTeX Info: Redefining \textsubscript on input line 123.
+LaTeX Info: Redefining \microtypecontext on input line 123.
+Package microtype Info: Applying patch `item' on input line 123.
+Package microtype Info: Applying patch `toc' on input line 123.
+Package microtype Info: Applying patch `eqnum' on input line 123.
+Package microtype Info: Applying patch `footnote' on input line 123.
+Package microtype Info: Applying patch `verbatim' on input line 123.
+LaTeX Info: Redefining \microtypesetup on input line 123.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -1026,7 +1026,7 @@ File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman
 Package pgfplots notification 'compat/show suggested version=true': document ha
 s been generated with the most recent feature set (\pgfplotsset{compat=1.18}).
 
-Package hyperref Info: Link coloring ON on input line 106.
+Package hyperref Info: Link coloring ON on input line 123.
 (./thesis-Bagini-2045337.out) (./thesis-Bagini-2045337.out)
 \@outlinefile=\write4
 \openout4 = `thesis-Bagini-2045337.out'.
@@ -1034,7 +1034,7 @@ Package hyperref Info: Link coloring ON on input line 106.
 \SAP@parboxindent=\skip82
 \SAP@parboxwidth=\skip83
 LaTeX Font Info:    Trying to load font information for T1+lmss on input line 1
-13.
+30.
 
 (/usr/share/texmf-dist/tex/latex/lm/t1lmss.fd
 File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
@@ -1043,10 +1043,10 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmss' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-<sapienzalogo.pdf, id=83, 288.07625pt x 89.33376pt>
+<sapienzalogo.pdf, id=87, 288.07625pt x 89.33376pt>
 File: sapienzalogo.pdf Graphic file (type pdf)
 <use sapienzalogo.pdf>
-Package pdftex.def Info: sapienzalogo.pdf  used on input line 113.
+Package pdftex.def Info: sapienzalogo.pdf  used on input line 130.
 (pdftex.def)             Requested size: 142.26378pt x 44.11742pt.
  [1
 
@@ -1055,44 +1055,44 @@ Package pdftex.def Info: sapienzalogo.pdf  used on input line 113.
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf-dist/fonts
 /enc/dvips/lm/lm-ec.enc} <./sapthesis/sapienzalogo.pdf>]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
-13.
+30.
  (/usr/share/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
-Underfull \hbox (badness 10000) in paragraph at lines 113--113
+Underfull \hbox (badness 10000) in paragraph at lines 130--130
 
  []
 
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-13.
+30.
 (/usr/share/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-13.
+30.
 
 (/usr/share/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-113.
+130.
 
 (/usr/share/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-113.
+130.
 
 (/usr/share/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 113.
+(Font)              <10> on input line 130.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 113.
+(Font)              <7> on input line 130.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 113.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 113
+(Font)              <5> on input line 130.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 130
 .
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
@@ -1101,7 +1101,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (/usr/share/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 113
+LaTeX Font Info:    Trying to load font information for U+msb on input line 130
 .
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -1110,7 +1110,7 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 (/usr/share/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-Underfull \hbox (badness 10000) in paragraph at lines 113--113
+Underfull \hbox (badness 10000) in paragraph at lines 130--130
 
  []
 
@@ -1119,22 +1119,29 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.113 
+l.130 
        [1
 
 {/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 115.
+(Font)              <10.95> on input line 132.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 115.
+(Font)              <8> on input line 132.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 115.
+(Font)              <6> on input line 132.
  [2
 
 
 {/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/share/texmf-dist/
 fonts/enc/dvips/lm/lm-rm.enc}{/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathi
 t.enc}]
+(./thesis-Bagini-2045337.toc)
+\tf@toc=\write5
+\openout5 = `thesis-Bagini-2045337.toc'.
+
+ [3
+
+]
 *geometry* verbose mode - [ newgeometry ] result:
 * driver: pdftex
 * paper: a4paper
@@ -1168,9 +1175,8 @@ t.enc}]
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-52.
-
-(/usr/share/texmf-dist/tex/latex/lm/t1lmtt.fd
+71.
+ (/usr/share/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 Package microtype Info: Loading generic protrusion settings for font family
@@ -1182,34 +1188,34 @@ Package microtype Info: Loading generic protrusion settings for font family
 
 {/usr/share/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}] [2]
 Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on in
-put line 276.
+put line 295.
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/lmr/m/sc/10'.
 (microtype)             Ignoring protrusion settings for this character.
- [3] [4] [5] [6] [7]
-Package pgfplots info on input line 507: Using 'lua backend=false' for axis: xm
+ [3] [4]
+[5] [6] [7]
+Package pgfplots info on input line 526: Using 'lua backend=false' for axis: xm
 ode=log unsupported (yet).
-Package pgfplots info on input line 507: Using 'lua backend=false' for axis: ym
+Package pgfplots info on input line 526: Using 'lua backend=false' for axis: ym
 ode=log unsupported (yet).
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 542.
+(Font)              <9> on input line 561.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <9> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 544.
- [8] [9] [10]
-(./thesis-Bagini-2045337.aux)
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 563.
+ [8] [9] [10] (./thesis-Bagini-2045337.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `thesis-Bagini-2045337.out' has not changed.
-(rerunfilecheck)             Checksum: 82B0F70C4D8E514C861711307691D138;6406.
+(rerunfilecheck)             Checksum: 4FC28EFFE6667E9109DC326BB6A2C4B9;6511.
  ) 
 Here is how much of TeX's memory you used:
- 38239 strings out of 469515
- 852004 string characters out of 5470806
- 1419206 words of memory out of 5000000
- 65846 multiletter control sequences out of 15000+600000
- 766387 words of font info for 288 fonts, out of 8000000 for 9000
+ 38262 strings out of 469515
+ 852380 string characters out of 5470806
+ 1419319 words of memory out of 5000000
+ 65855 multiletter control sequences out of 15000+600000
+ 772804 words of font info for 294 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  99i,19n,131p,1970b,2278s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/share/texmf-dis
@@ -1234,10 +1240,10 @@ blic/lm/lmtk10.pfb></usr/share/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></us
 r/share/texmf-dist/fonts/type1/public/lm/lmtt8.pfb></usr/share/texmf-dist/fonts
 /type1/public/amsfonts/symbols/msam10.pfb></usr/share/texmf-dist/fonts/type1/pu
 blic/amsfonts/symbols/msbm10.pfb>
-Output written on thesis-Bagini-2045337.pdf (13 pages, 634202 bytes).
+Output written on thesis-Bagini-2045337.pdf (14 pages, 637273 bytes).
 PDF statistics:
- 467 PDF objects out of 1000 (max. 8388607)
- 379 compressed objects within 4 object streams
- 89 named destinations out of 1000 (max. 500000)
- 78506 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 497 PDF objects out of 1000 (max. 8388607)
+ 407 compressed objects within 5 object streams
+ 91 named destinations out of 1000 (max. 500000)
+ 82610 words of extra memory for PDF output out of 89155 (max. 10000000)
 
