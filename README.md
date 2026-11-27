@@ -56,6 +56,11 @@ A curated collection of practical laboratory assignments, interactive simulation
 * **Probability Theory & Limit Theorems:** Formalizes almost sure ($\text{a.s.}$), mean-square ($L^2$), in-probability ($P$), and in-distribution ($d$) convergence, their implication hierarchy, variance additivity (Biénaymé's formula), the $\sqrt{n}$ law, and breakdown under heavy tails (Cauchy) or pairwise dependence ($\rho > 0$).
 * **Bayesian Inference Labs:** Interactive **Beta–Binomial** conjugate updating with prior-sensitivity curves (Bernstein–von Mises dominance as $n$ grows) and a discrete **Intrusion Detection System (IDS)** base-rate fallacy simulator with sequential posterior updating.
 
+### [Homework 8: Correlation, Linear Regression & Independence](./hw8/index.html)
+* **Correlation & OLS Derivation:** Formalizes covariance, Pearson's $r$ as $\cos\theta$, full calculus derivation of OLS intercept $\hat{a}$ and slope $\hat{b}$ with Hessian global-optimality check, and variance decomposition ($\text{TSS} = \text{ESS} + \text{RSS}$, $R^2 = r^2$).
+* **Dual Regression & Geometric Mean Lab:** Computes both regression lines ($Y$ on $X$ and $X$ on $Y$) on any preset, synthetic, CSV, pasted, or click-plotted dataset, verifying $r = \operatorname{sgn}(s_{XY})\sqrt{b_{Y|X}\cdot b_{X|Y}}$ and inspecting vertical/horizontal residuals.
+* **Independence vs. Uncorrelation:** Proves formally that independence implies uncorrelation ($\mathrm{Cov}(X,Y)=0$) and interactively demonstrates counterexamples (parabola, unit circle, X-shaped Gaussian marginals) using $4\times 4$ quantile $\chi^2$ independence testing.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -98,7 +103,10 @@ A curated collection of practical laboratory assignments, interactive simulation
 ├── hw6/                    # Homework 6: Statistical Independence & Contingency Analysis
 │   ├── index.html          # Contingency table builder and chi-square test lab
 │   └── app.js              # Bivariate reduction, expected counts, incomplete-gamma p-value
-└── hw7/                    # Homework 7: Modes of Convergence & Bayesian Inference
-    ├── index.html          # Convergence theory, √n law, and Bayesian inference labs
-    └── app.js              # Convergence simulator, Beta-Binomial & IDS Bayes engines
+├── hw7/                    # Homework 7: Modes of Convergence & Bayesian Inference
+│   ├── index.html          # Convergence theory, √n law, and Bayesian inference labs
+│   └── app.js              # Convergence simulator, Beta-Binomial & IDS Bayes engines
+└── hw8/                    # Homework 8: Correlation, Linear Regression & Independence
+    ├── index.html          # OLS derivation, dual regression verifier & independence proofs
+    └── app.js              # Dual OLS engine, Liang-Barsky clipper & χ² counterexample lab
 ```

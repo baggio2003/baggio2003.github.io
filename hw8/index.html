@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlation, Linear Regression &amp; Independence | Statistics Lab</title>
+
+    <!-- Global Portfolio Stylesheet -->
+    <link rel="stylesheet" href="../style.css?v=4">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Prevent display:flex on .card h2 from breaking inline math */
+        .card h2 {
+            display: block;
+        }
+
+        mjx-container[jax="CHTML"][display="true"] {
+            display: block !important;
+            margin: 0.85rem 0 !important;
+            padding: 0.45rem 0.4rem !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+        }
+
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.6rem;
+        }
+        .section-badge.purple {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+        .section-badge.emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .section-badge.amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.35);
+        }
+        .section-badge.rose {
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            border-color: rgba(244, 63, 94, 0.35);
+        }
+
+        .derivation-box {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 4px solid #38bdf8;
+            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        .derivation-box p {
+            margin-bottom: 0.65rem;
+            font-size: 0.92rem;
+        }
+        .derivation-box p:last-child {
+            margin-bottom: 0;
+        }
+        .derivation-box.accent-purple { border-left-color: #a855f7; }
+        .derivation-box.accent-emerald { border-left-color: #10b981; }
+        .derivation-box.accent-amber { border-left-color: #f59e0b; }
+        .derivation-box.accent-rose { border-left-color: #f43f5e; }
+
+        .theory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+        .theory-card {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.6rem;
+            padding: 1.35rem;
+            overflow-x: auto;
+        }
+        .theory-card h4 {
+            margin-top: 0;
+            margin-bottom: 0.65rem;
+            color: #38bdf8;
+            font-size: 1.02rem;
+            line-height: 1.4;
+        }
+        .theory-card p, .theory-card li {
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .theory-card p {
+            margin-bottom: 0.7rem;
+        }
+        .theory-card p:last-child {
+            margin-bottom: 0;
+        }
+        .theory-card ul {
+            padding-left: 1.2rem;
+            margin-top: 0.35rem;
+        }
+        .theory-card li {
+            margin-bottom: 0.45rem;
+        }
+
+        .formula-pill {
+            background: rgba(9, 13, 22, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 0.45rem;
+            padding: 0.55rem 0.75rem;
+            margin: 0.7rem 0;
+            text-align: center;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+
+        .charts-two-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(410px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 380px;
+            max-height: 460px;
+            background: rgba(10, 14, 23, 0.6);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            padding: 1rem;
+        }
+
+        .verify-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.10));
+            border: 1px solid rgba(16, 185, 129, 0.38);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.45rem;
+            margin-top: 1.35rem;
+        }
+        .verify-box.warn {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.12), rgba(245, 158, 11, 0.08));
+            border-color: rgba(244, 63, 94, 0.4);
+        }
+        .verify-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            margin-top: 0.85rem;
+        }
+        .verify-metric {
+            background: rgba(9, 13, 22, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-sm);
+            padding: 0.85rem 1rem;
+        }
+        .verify-metric .label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+        .verify-metric .val {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-top: 0.25rem;
+            word-break: break-word;
+        }
+
+        .insight-banner {
+            padding: 1.15rem 1.4rem;
+            border-radius: var(--radius-md);
+            margin-top: 1.25rem;
+            border-left: 4px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.08);
+            font-size: 0.9rem;
+        }
+        .insight-banner.warn {
+            border-left-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.1);
+        }
+        .insight-banner.success {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .data-table-wrapper {
+            overflow-x: auto;
+            max-height: 360px;
+            margin-top: 1.25rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+            text-align: right;
+        }
+        .data-table th, .data-table td {
+            padding: 0.65rem 0.85rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+        .data-table th {
+            color: #38bdf8;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.92);
+            font-family: var(--font-sans);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .data-table td {
+            font-family: var(--font-mono);
+        }
+        .data-table tr.totals-row td {
+            background: rgba(99, 102, 241, 0.14);
+            color: #f8fafc;
+            font-weight: 700;
+            border-top: 2px solid rgba(99, 102, 241, 0.45);
+        }
+
+        .equation-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+        .eq-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.2rem;
+        }
+        .eq-card.cyan { border-top: 3px solid #38bdf8; }
+        .eq-card.purple { border-top: 3px solid #c084fc; }
+        .eq-card .eq-title {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.35rem;
+        }
+        .eq-card .eq-formula {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .eq-card .eq-sub {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            margin-top: 0.35rem;
+            font-family: var(--font-mono);
+        }
+
+        .helper-note {
+            font-size: 0.82rem;
+            color: #94a3b8;
+            margin-top: 0.4rem;
+        }
+
+        .synth-controls {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem 1.2rem;
+            background: rgba(9, 13, 22, 0.55);
+            border: 1px solid rgba(99, 102, 241, 0.28);
+            border-radius: var(--radius-md);
+        }
+        .synth-controls.visible {
+            display: block;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #6366f1;
+            cursor: pointer;
+        }
+
+        details.audit-details {
+            margin-top: 1.25rem;
+        }
+        details.audit-details summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: #a5b4fc;
+            font-size: 0.92rem;
+            padding: 0.5rem 0;
+            user-select: none;
+        }
+        details.audit-details summary:hover {
+            color: #ffffff;
+        }
+
+        @media (max-width: 680px) {
+            .charts-two-col, .theory-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="../index.html" class="back-link">&larr; Back to Portfolio</a>
+            <h1>Correlation, Linear Regression &amp; Independence</h1>
+            <p class="subtitle">Pearson's $r$, Ordinary Least Squares (OLS) Derivation for $a$ and $b$, Dual Regression Lines ($Y|X$ &amp; $X|Y$), Geometric Mean Verification, and Proof that Independence Implies Uncorrelation</p>
+        </header>
+
+        <!-- ==================== SECTION 1: CORRELATION & COVARIANCE ==================== -->
+        <section class="card">
+            <span class="section-badge">Part 1 &bull; Linear Association</span>
+            <h2>1. Covariance &amp; Pearson's Linear Correlation Coefficient $r$</h2>
+            <p style="margin-bottom: 1rem;">
+                Given a bivariate dataset $\{(x_i, y_i)\}_{i=1}^n$ (or random variables $X, Y$ with finite, non-zero variances $\sigma_X^2, \sigma_Y^2 \in (0, \infty)$), <strong>covariance</strong> measures the joint linear co-movement of deviations from their respective means, while <strong>Pearson's correlation coefficient</strong> standardizes covariance into a dimensionless index on $[-1, 1]$.
+            </p>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4 style="color: #38bdf8;">Covariance (Population &amp; Sample)</h4>
+                    <div class="formula-pill">
+                        $\mathrm{Cov}(X, Y) = \mathbb{E}\!\left[(X - \mu_X)(Y - \mu_Y)\right] = \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y]$
+                    </div>
+                    <div class="formula-pill">
+                        $s_{XY} = \frac{1}{n}\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})$
+                    </div>
+                    <p>
+                        Positive $s_{XY}$ indicates that above-average $X$ values tend to pair with above-average $Y$ values; negative $s_{XY}$ indicates inverse co-movement. Because $s_{XY}$ inherits the product of units of $X$ and $Y$, its raw magnitude cannot be compared across scales.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #c084fc;">Pearson's $r$ &amp; Geometric Meaning ($\cos\theta$)</h4>
+                    <div class="formula-pill">
+                        $r = \frac{s_{XY}}{s_X s_Y} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2}\sqrt{\sum_{i=1}^n (y_i - \bar{y})^2}}$
+                    </div>
+                    <p>
+                        Notice that dividing by $n$ or $n - 1$ cancels identically between numerator and denominator. Letting $\tilde{\mathbf{x}} = (x_1 - \bar{x}, \dots, x_n - \bar{x})^\top$ and $\tilde{\mathbf{y}} = (y_1 - \bar{y}, \dots, y_n - \bar{y})^\top$ in $\mathbb{R}^n$, Pearson's $r$ is literally the <strong>cosine of the angle</strong> between the centered data vectors:
+                    </p>
+                    <div class="formula-pill">
+                        $r = \frac{\langle \tilde{\mathbf{x}}, \tilde{\mathbf{y}} \rangle}{\|\tilde{\mathbf{x}}\|_2 \, \|\tilde{\mathbf{y}}\|_2} = \cos\theta \in [-1, 1]$
+                    </div>
+                </div>
+            </div>
+
+            <div class="derivation-box accent-purple">
+                <p><strong>Fundamental Algebraic Properties of Pearson's $r$:</strong></p>
+                <ul style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.65;">
+                    <li><strong>Cauchy–Schwarz Bound ($|r| \le 1$):</strong> $|\langle \tilde{\mathbf{x}}, \tilde{\mathbf{y}} \rangle| \le \|\tilde{\mathbf{x}}\|_2 \|\tilde{\mathbf{y}}\|_2$, with equality $|r| = 1$ if and only if $\tilde{\mathbf{y}} = b\tilde{\mathbf{x}}$ for some $b \neq 0$ (all points lie strictly on a non-horizontal, non-vertical line $y = a + bx$).</li>
+                    <li><strong>Affine Invariance:</strong> For any $c_1, c_2 \neq 0$ and shifts $d_1, d_2 \in \mathbb{R}$, $r(c_1 X + d_1,\; c_2 Y + d_2) = \operatorname{sgn}(c_1 c_2)\,r(X, Y)$.</li>
+                    <li><strong>Symmetry &amp; Linearity Limitation:</strong> $r(X, Y) = r(Y, X)$, and $r$ detects <em>linear</em> association only—strong nonlinear relationships (e.g., $Y = X^2$) can yield $r = 0$.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 2: SOLVING OLS FOR a AND b ==================== -->
+        <section class="card">
+            <span class="section-badge purple">Part 2 &bull; Ordinary Least Squares (OLS)</span>
+            <h2>2. Solving the Linear Regression Problem for $a$ and $b$</h2>
+            <p style="margin-bottom: 1rem;">
+                To predict $Y$ as a linear function $\hat{y}_i = a + b x_i$, Ordinary Least Squares chooses the intercept $a$ and slope $b$ that minimize the Sum of Squared vertical Residuals (RSS):
+            </p>
+
+            <div class="derivation-box">
+                <p><strong>Step 1 — Objective Function &amp; Normal Equations:</strong></p>
+                $$S(a, b) = \sum_{i=1}^n e_i^2 = \sum_{i=1}^n \bigl(y_i - a - b x_i\bigr)^2.$$
+                <p>Setting both first partial derivatives to zero yields the <em>Normal Equations</em>:</p>
+                $$\frac{\partial S}{\partial a} = -2\sum_{i=1}^n (y_i - a - b x_i) = 0 \quad \Longrightarrow \quad n a + b\sum_{i=1}^n x_i = \sum_{i=1}^n y_i \quad \Longrightarrow \quad \boxed{\hat{a} = \bar{y} - \hat{b}\bar{x}}$$
+                <p>Immediately, $\hat{a} + \hat{b}\bar{x} = \bar{y}$: the OLS regression line <strong>always passes through the sample centroid $(\bar{x}, \bar{y})$</strong>, and the residuals sum identically to zero ($\sum_{i=1}^n e_i = 0$).</p>
+
+                <p><strong>Step 2 — Closed-Form Solution for the Slope $\hat{b}$:</strong></p>
+                <p>Substituting $\hat{a} = \bar{y} - \hat{b}\bar{x}$ into the second normal equation $\frac{\partial S}{\partial b} = -2\sum_{i=1}^n x_i(y_i - \hat{a} - \hat{b}x_i) = 0$:</p>
+                $$\sum_{i=1}^n x_i\bigl((y_i - \bar{y}) - \hat{b}(x_i - \bar{x})\bigr) = 0.$$
+                <p>Since $\bar{x}\sum_{i=1}^n (y_i - \bar{y}) = 0$ and $\bar{x}\sum_{i=1}^n (x_i - \bar{x}) = 0$, we may replace the leading $x_i$ with $(x_i - \bar{x})$:</p>
+                $$\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y}) - \hat{b}\sum_{i=1}^n (x_i - \bar{x})^2 = 0 \quad \Longrightarrow \quad \boxed{\hat{b}_{Y|X} = \frac{\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^n (x_i - \bar{x})^2} = \frac{s_{XY}}{s_X^2} = r\,\frac{s_Y}{s_X}}$$
+
+                <p><strong>Step 3 — Second-Order Global Optimality (Hessian Check):</strong></p>
+                $$H(a, b) = \begin{pmatrix} \dfrac{\partial^2 S}{\partial a^2} & \dfrac{\partial^2 S}{\partial a\,\partial b} \\[6pt] \dfrac{\partial^2 S}{\partial b\,\partial a} & \dfrac{\partial^2 S}{\partial b^2} \end{pmatrix} = \begin{pmatrix} 2n & 2\sum x_i \\ 2\sum x_i & 2\sum x_i^2 \end{pmatrix}, \qquad \det(H) = 4n\sum_{i=1}^n (x_i - \bar{x})^2 = 4n^2 s_X^2 &gt; 0.$$
+                <p>Because $\frac{\partial^2 S}{\partial a^2} = 2n &gt; 0$ and $\det(H) &gt; 0$ whenever $s_X^2 &gt; 0$, $S(a, b)$ is strictly convex and $(\hat{a}, \hat{b})$ is its <strong>unique global minimum</strong>.</p>
+            </div>
+
+            <!-- Relationship with Correlation & Dual Regression Lines -->
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4 style="color: #34d399;">Relationship Between $r$ and Regression ($R^2 = r^2$)</h4>
+                    <p>
+                        Rewriting $\hat{y} = \bar{y} + r\frac{s_Y}{s_X}(x - \bar{x})$ in standardized $z$-scores reveals Galton's <em>regression toward the mean</em>:
+                    </p>
+                    <div class="formula-pill">
+                        $\dfrac{\hat{y} - \bar{y}}{s_Y} = r \cdot \dfrac{x - \bar{x}}{s_X}$
+                    </div>
+                    <p>
+                        <strong>Proof of $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$ and $R^2 = r^2$:</strong> Writing $y_i - \bar{y} = (\hat{y}_i - \bar{y}) + e_i$, squaring, and summing gives a cross-term $2\sum (\hat{y}_i - \bar{y})e_i = 2\hat{b}_{Y|X}\sum (x_i - \bar{x})e_i = 0$ by the second Normal Equation, hence $\mathrm{TSS} = \mathrm{ESS} + \mathrm{RSS}$. Since $\hat{y}_i - \bar{y} = \hat{b}_{Y|X}(x_i - \bar{x})$:
+                    </p>
+                    <div class="formula-pill">
+                        $\mathrm{ESS} = \hat{b}_{Y|X}^2 \sum (x_i - \bar{x})^2 = \left(\dfrac{s_{XY}}{s_X^2}\right)^2 n s_X^2 = r^2 (n s_Y^2) = r^2\,\mathrm{TSS} \;\Longrightarrow\; R^2 = \dfrac{\mathrm{ESS}}{\mathrm{TSS}} = r^2$
+                    </div>
+                    <p>
+                        Thus $r^2$ is the exact fraction of the variance of $Y$ explained linearly by $X$.
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #fbbf24;">Both Regression Lines &amp; Geometric Mean Identity</h4>
+                    <p>
+                        Swapping the roles of response and predictor minimizes <strong>horizontal</strong> squared errors $\sum (x_i - a_{X|Y} - b_{X|Y} y_i)^2$, yielding the second regression line $L_{X|Y}$:
+                    </p>
+                    <div class="formula-pill">
+                        $L_{Y|X}:\; \hat{y} = a_{Y|X} + b_{Y|X} x, \quad b_{Y|X} = \dfrac{s_{XY}}{s_X^2} = r\dfrac{s_Y}{s_X}$
+                    </div>
+                    <div class="formula-pill">
+                        $L_{X|Y}:\; \hat{x} = a_{X|Y} + b_{X|Y} y, \quad b_{X|Y} = \dfrac{s_{XY}}{s_Y^2} = r\dfrac{s_X}{s_Y}$
+                    </div>
+                    <p>
+                        Because $s_X^2, s_Y^2 &gt; 0$, both slopes <em>always share the exact sign of $s_{XY}$</em>, so $b_{Y|X}\cdot b_{X|Y} \ge 0$ always. Taking the signed square root preserves negative correlations ($r &lt; 0$):
+                    </p>
+                    <div class="formula-pill">
+                        $b_{Y|X} \cdot b_{X|Y} = \left(\dfrac{s_{XY}}{s_X^2}\right)\!\left(\dfrac{s_{XY}}{s_Y^2}\right) = \dfrac{s_{XY}^2}{s_X^2 s_Y^2} = r^2 \;\Longrightarrow\; \boxed{r = \operatorname{sgn}(s_{XY})\sqrt{b_{Y|X} \cdot b_{X|Y}}}$
+                    </div>
+                    <p>
+                        Both lines intersect at $(\bar{x}, \bar{y})$. They <strong>coincide</strong> iff $|r| = 1$ ($\phi_{\mathrm{std}} = 0^\circ$) and are <strong>perpendicular</strong> ($y = \bar{y}$ vs.\ $x = \bar{x}$) iff $r = 0$ ($\phi_{\mathrm{std}} = 90^\circ$); in standardized coordinates, $\tan\phi_{\mathrm{std}} = \frac{1 - r^2}{2|r|}$.
+                    </p>
+                </div>
+            </div>
+
+            <div class="derivation-box accent-emerald" style="margin-top: 1.25rem;">
+                <p><strong>Streaming $\mathcal{O}(1)$ Connection (Welford / P&eacute;bay Online Co-Moment, cf. Homework 4):</strong> Rather than storing all $n$ pairs or risking catastrophic cancellation in $\sum x_i y_i - n\bar{x}\bar{y}$, the centered co-moment $C_n = \sum_{i=1}^n (x_i - \bar{x}_n)(y_i - \bar{y}_n)$ updates in a single pass alongside Welford's $M_{2,X}$ and $M_{2,Y}$ via $C_n = C_{n-1} + (x_n - \bar{x}_{n-1})(y_n - \bar{y}_n)$, yielding $r = C_n / \sqrt{M_{2,X} M_{2,Y}}$, $\hat{b}_{Y|X} = C_n / M_{2,X}$, and $\hat{b}_{X|Y} = C_n / M_{2,Y}$ in strictly $\mathcal{O}(1)$ memory.</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 3: INTERACTIVE DUAL-REGRESSION LAB ==================== -->
+        <section class="card">
+            <span class="section-badge emerald">Part 3 &bull; Interactive Laboratory</span>
+            <h2>3. Dual Regression Lines &amp; Geometric Mean Verifier (Any Dataset)</h2>
+            <p style="margin-bottom: 1rem;">
+                Select a curated dataset, synthesize bivariate Gaussian data with any target correlation $\rho$, upload a CSV, paste your own $(x_i, y_i)$ pairs, or <strong>click directly on the scatter plot</strong> to add points. Both OLS lines ($Y$ on $X$ and $X$ on $Y$) and the identity $r = \operatorname{sgn}(s_{XY})\sqrt{b_{Y|X}\cdot b_{X|Y}}$ are recomputed immediately.
+            </p>
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="dataset-preset">Dataset Preset / Mode</label>
+                    <select id="dataset-preset">
+                        <option value="cyber_load">Cyber Telemetry: Packet Rate (kpps) vs. CPU Load (%)</option>
+                        <option value="cache_latency">Negative Trend: Cache Hit Rate (%) vs. Latency (ms)</option>
+                        <option value="anscombe1">Anscombe's Quartet — Dataset I (Linear, r &approx; 0.816)</option>
+                        <option value="anscombe2">Anscombe's Quartet — Dataset II (Curved, same r &approx; 0.816)</option>
+                        <option value="anscombe3">Anscombe's Quartet — Dataset III (Outlier, same r &approx; 0.816)</option>
+                        <option value="weak_noise">Weak Positive Association (Wide Scissors Angle)</option>
+                        <option value="parabola">Exact Nonlinear Parabola: Y = X&sup2; &minus; 4 (r = 0)</option>
+                        <option value="synthetic">Synthetic Bivariate Normal (Adjustable &rho;)</option>
+                        <option value="custom">Custom Dataset (Edit Below / Click Plot)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="residual-mode">Visual Residuals on Scatter Plot</label>
+                    <select id="residual-mode">
+                        <option value="none">None (Clean Regression Lines)</option>
+                        <option value="vertical">Vertical Residuals e = y &minus; &ycirc; (Y on X)</option>
+                        <option value="horizontal">Horizontal Residuals u = x &minus; x&#770; (X on Y)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="csv-upload">Upload 2-Column CSV / TXT</label>
+                    <input type="file" id="csv-upload" accept=".csv,.txt" style="padding: 0.55rem 0.75rem; font-size: 0.85rem; color: #cbd5e1; background: rgba(13,17,26,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-md);">
+                </div>
+            </div>
+
+            <!-- Synthetic Generator Controls -->
+            <div id="synth-panel" class="synth-controls">
+                <div class="control-grid" style="margin: 0;">
+                    <div class="input-group">
+                        <label for="synth-rho">Target Correlation &rho;: <span id="val-synth-rho" style="color: #38bdf8; font-family: var(--font-mono);">+0.75</span></label>
+                        <input type="range" id="synth-rho" min="-0.99" max="0.99" step="0.01" value="0.75">
+                    </div>
+                    <div class="input-group">
+                        <label for="synth-n">Sample Size n: <span id="val-synth-n" style="color: #38bdf8; font-family: var(--font-mono);">45</span></label>
+                        <input type="range" id="synth-n" min="10" max="150" step="5" value="45">
+                    </div>
+                    <div class="input-group" style="justify-content: flex-end;">
+                        <button id="btn-resample-synth" type="button">Regenerate Sample</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editable Raw Dataset Input -->
+            <div class="input-group" style="margin-top: 1.1rem;">
+                <label for="raw-data-input">Bivariate Data Pairs (one "x, y" pair per line — comma, space, tab, or semicolon separated)</label>
+                <textarea id="raw-data-input" rows="5" spellcheck="false" style="min-height: 110px;"></textarea>
+                <p class="helper-note">Tip: Edit any numbers and click <strong>Compute Dual Regression</strong>, or click anywhere inside the scatter chart below to append a new $(x, y)$ point interactively.</p>
+            </div>
+
+            <div class="btn-row" style="margin-top: 0.9rem;">
+                <button id="btn-compute-reg" type="button">Compute Dual Regression</button>
+                <button id="btn-undo-point" type="button" class="secondary">Undo Last Point</button>
+                <button id="btn-clear-points" type="button" class="secondary">Clear Dataset</button>
+            </div>
+
+            <!-- Regression Equations Strip -->
+            <div class="equation-strip">
+                <div class="eq-card cyan">
+                    <div class="eq-title" style="color: #38bdf8;">Regression of Y on X (Minimizes Vertical RSS)</div>
+                    <div class="eq-formula" id="eq-yonx">&mdash;</div>
+                    <div class="eq-sub" id="sub-yonx">&mdash;</div>
+                </div>
+                <div class="eq-card purple">
+                    <div class="eq-title" style="color: #c084fc;">Regression of X on Y (Minimizes Horizontal RSS)</div>
+                    <div class="eq-formula" id="eq-xony">&mdash;</div>
+                    <div class="eq-sub" id="sub-xony">&mdash;</div>
+                </div>
+            </div>
+
+            <!-- Geometric Mean Identity Verification Panel -->
+            <div id="geom-verify-box" class="verify-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <strong style="color: #f8fafc; font-size: 0.96rem;">Geometric Mean Identity Verification: $r \stackrel{?}{=} \operatorname{sgn}(s_{XY})\sqrt{b_{Y|X} \cdot b_{X|Y}}$</strong>
+                    <span id="verify-status-badge" class="badge badge-success">VERIFIED</span>
+                </div>
+                <div class="verify-grid">
+                    <div class="verify-metric">
+                        <div class="label">Direct Pearson r</div>
+                        <div class="val" id="ver-r" style="color: #38bdf8;">&mdash;</div>
+                    </div>
+                    <div class="verify-metric">
+                        <div class="label">Product b<sub>Y|X</sub> &middot; b<sub>X|Y</sub></div>
+                        <div class="val" id="ver-prod" style="color: #c084fc;">&mdash;</div>
+                    </div>
+                    <div class="verify-metric">
+                        <div class="label">Signed Geom. Mean</div>
+                        <div class="val" id="ver-geom" style="color: #34d399;">&mdash;</div>
+                    </div>
+                    <div class="verify-metric">
+                        <div class="label">|r &minus; Geom. Mean|</div>
+                        <div class="val" id="ver-diff" style="color: #fbbf24;">&mdash;</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics KPIs -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Sample Size (n) &amp; Centroid</div>
+                    <div class="stat-value" id="kpi-centroid" style="font-size: 1.15rem;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Std. Deviations s<sub>X</sub>, s<sub>Y</sub> (1/n)</div>
+                    <div class="stat-value" id="kpi-sds" style="font-size: 1.15rem;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Covariance s<sub>XY</sub> (1/n)</div>
+                    <div class="stat-value" id="kpi-cov" style="font-size: 1.25rem;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">R&sup2; = ESS / TSS</div>
+                    <div class="stat-value" id="kpi-r2" style="font-size: 1.25rem; color: #34d399;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Std. Angle &phi;<sub>std</sub> Between Lines</div>
+                    <div class="stat-value" id="kpi-angle" style="font-size: 1.25rem; color: #fbbf24;">&mdash;</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-dual-regression"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-residuals"></canvas>
+                </div>
+            </div>
+
+            <div id="reg-insight" class="insight-banner"></div>
+
+            <!-- Step-by-Step Algebraic Audit Table -->
+            <details class="audit-details">
+                <summary>Inspect Step-by-Step OLS &amp; Covariance Computation Table (x<sub>i</sub>, y<sub>i</sub>, deviations, products, predictions &amp; residuals)</summary>
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>$i$</th>
+                                <th>$x_i$</th>
+                                <th>$y_i$</th>
+                                <th>$x_i - \bar{x}$</th>
+                                <th>$y_i - \bar{y}$</th>
+                                <th>$(x_i - \bar{x})^2$</th>
+                                <th>$(y_i - \bar{y})^2$</th>
+                                <th>$(x_i - \bar{x})(y_i - \bar{y})$</th>
+                                <th>$\hat{y}_i$</th>
+                                <th>$e_i = y_i - \hat{y}_i$</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body"></tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+
+        <!-- ==================== SECTION 4: PROOF THAT INDEPENDENCE IMPLIES UNCORRELATION ==================== -->
+        <section class="card">
+            <span class="section-badge rose">Part 4 &bull; Mathematical Proof &amp; Counterexamples</span>
+            <h2>4. Proof That Independence Implies Uncorrelation (and Why the Converse Fails)</h2>
+
+            <div class="derivation-box accent-emerald">
+                <p><strong>Theorem (Independence $\implies$ Uncorrelation):</strong> Let $X$ and $Y$ be independent random variables with finite, strictly positive variances $0 &lt; \mathrm{Var}(X), \mathrm{Var}(Y) &lt; \infty$. Then $\mathrm{Cov}(X, Y) = 0$ and consequently $\rho(X, Y) = 0$.</p>
+
+                <p><strong>Proof (Discrete Case):</strong> Independence means that the joint probability mass function factorizes for every $(x, y)$ as $p_{X,Y}(x, y) = p_X(x)\,p_Y(y)$. Computing $\mathbb{E}[XY]$ (absolutely convergent since $\mathbb{E}[|XY|] \le \sqrt{\mathbb{E}[X^2]\mathbb{E}[Y^2]} &lt; \infty$ by Cauchy–Schwarz):</p>
+                $$\mathbb{E}[XY] = \sum_{x} \sum_{y} x y \, p_{X,Y}(x, y) = \sum_{x} \sum_{y} x y \, p_X(x) p_Y(y) = \left(\sum_{x} x\,p_X(x)\right)\!\left(\sum_{y} y\,p_Y(y)\right) = \mathbb{E}[X]\,\mathbb{E}[Y].$$
+
+                <p><strong>Proof (Continuous Case):</strong> Independence means that the joint density factorizes almost everywhere as $f_{X,Y}(x, y) = f_X(x)\,f_Y(y)$. By Fubini–Tonelli's Theorem (since $\mathbb{E}[|X|] &lt; \infty$ and $\mathbb{E}[|Y|] &lt; \infty$):</p>
+                $$\mathbb{E}[XY] = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} x y \, f_X(x) f_Y(y)\,dx\,dy = \left(\int_{-\infty}^{\infty} x\,f_X(x)\,dx\right)\!\left(\int_{-\infty}^{\infty} y\,f_Y(y)\,dy\right) = \mathbb{E}[X]\,\mathbb{E}[Y].$$
+
+                <p><strong>Conclusion (General Measure-Theoretic Form):</strong> In general, independence implies $\mathbb{E}[g(X)h(Y)] = \mathbb{E}[g(X)]\mathbb{E}[h(Y)]$ for all integrable Borel functions $g, h$. Setting $g(x) = x - \mu_X$ and $h(y) = y - \mu_Y$ yields:</p>
+                $$\mathrm{Cov}(X, Y) = \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y] = 0 \quad \Longrightarrow \quad \rho(X, Y) = \frac{\mathrm{Cov}(X, Y)}{\sigma_X \sigma_Y} = 0. \qquad \square$$
+            </div>
+
+            <div class="theory-grid">
+                <div class="theory-card">
+                    <h4 style="color: #fb7185;">Why the Converse Fails: $\rho = 0 \;\not\!\!\implies$ Independence</h4>
+                    <p>
+                        <strong>Counterexample (Symmetric Parabola):</strong> Let $X$ be symmetrically distributed around $0$ with $\mathbb{E}[X^4] &lt; \infty$ (e.g., $X \sim \mathrm{Uniform}(-1, 1)$ or $X \in \{-1, 0, 1\}$ with equal probability $1/3$), and set $Y = X^2$.
+                    </p>
+                    <div class="formula-pill">
+                        $\mathbb{E}[X] = 0, \qquad \mathbb{E}[XY] = \mathbb{E}[X^3] = 0 \;\Longrightarrow\; \mathrm{Cov}(X, Y) = 0 \;\Longrightarrow\; \rho(X, Y) = 0$
+                    </div>
+                    <p>
+                        Yet $Y$ is a <strong>deterministic function</strong> of $X$: knowing $X = 0$ forces $Y = 0$ with probability $1$, whereas unconditionally $\mathbb{P}(Y = 0) &lt; 1$. Uncorrelation only rules out a <em>linear</em> trend—never nonlinear dependence!
+                    </p>
+                </div>
+
+                <div class="theory-card">
+                    <h4 style="color: #38bdf8;">The Notable Exception: Jointly Gaussian $(X, Y)$</h4>
+                    <p>
+                        When $(X, Y)$ follows a <strong>Bivariate Normal</strong> distribution $\mathcal{N}_2(\mu_X, \mu_Y, \sigma_X^2, \sigma_Y^2, \rho)$, the joint density is determined completely by means, variances, and $\rho$:
+                    </p>
+                    <div class="formula-pill">
+                        $\rho = 0 \iff f_{X,Y}(x, y) = f_X(x) f_Y(y) \iff X \perp\!\!\!\perp Y$
+                    </div>
+                    <p>
+                        <strong>Subtle Trap:</strong> Marginal normality alone is <em>not</em> sufficient! If $X \sim \mathcal{N}(0, 1)$ and $Y = S \cdot X$ where $S \in \{-1, +1\}$ is an independent Rademacher sign, then <em>both</em> $X$ and $Y$ are $\mathcal{N}(0, 1)$ with $\rho(X, Y) = 0$, yet $|Y| = |X|$ (strongly dependent, not jointly Gaussian!).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECTION 5: INTERACTIVE INDEPENDENCE VS UNCORRELATION LAB ==================== -->
+        <section class="card">
+            <span class="section-badge amber">Part 5 &bull; Empirical Counterexample Lab</span>
+            <h2>5. Independence vs. Uncorrelation Simulator ($r \approx 0$ vs. $\chi^2$ Independence Test)</h2>
+            <p style="margin-bottom: 1rem;">
+                Compare a genuinely independent bivariate Gaussian pair against three canonical <strong>uncorrelated-but-dependent</strong> models. In every case, Pearson's $r \approx 0$ and the two regression lines are nearly perpendicular—yet a $4 \times 4$ quantile-bin Pearson $\chi^2$ independence test (cf. Homework 6) immediately exposes hidden nonlinear dependence!
+            </p>
+
+            <div class="control-grid">
+                <div class="input-group">
+                    <label for="indep-model">Stochastic Model</label>
+                    <select id="indep-model">
+                        <option value="parabola">1. Quadratic Dependence: X ~ U(&minus;2, 2), Y = X&sup2; + &epsilon; (&rho; = 0, Dependent)</option>
+                        <option value="circle">2. Unit Circle: X = cos(&Theta;), Y = sin(&Theta;) + &epsilon; (&rho; = 0, Dependent)</option>
+                        <option value="xshape">3. X-Shaped Gaussian Marginals: Y = S&middot;X, S &isin; {&minus;1, +1} (&rho; = 0, Dependent)</option>
+                        <option value="independent">4. Truly Independent: X ~ N(0,1), Y ~ N(0,1) (&rho; = 0, Independent)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="indep-n">Sample Size n: <span id="val-indep-n" style="color: #fbbf24; font-family: var(--font-mono);">400</span></label>
+                    <input type="range" id="indep-n" min="100" max="1200" step="50" value="400">
+                </div>
+
+                <div class="input-group">
+                    <label for="indep-noise">Additive Noise &sigma;<sub>&epsilon;</sub>: <span id="val-indep-noise" style="color: #fbbf24; font-family: var(--font-mono);">0.15</span></label>
+                    <input type="range" id="indep-noise" min="0" max="1.0" step="0.05" value="0.15">
+                </div>
+            </div>
+
+            <div class="btn-row" style="margin-top: 0.75rem;">
+                <button id="btn-run-indep" type="button">Simulate &amp; Test Independence</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Sample Pearson r</div>
+                    <div class="stat-value" id="indep-r" style="color: #38bdf8;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Regression Slopes (b<sub>Y|X</sub>, b<sub>X|Y</sub>)</div>
+                    <div class="stat-value" id="indep-slopes" style="font-size: 1.15rem;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">4&times;4 Quantile &chi;&sup2; (df = 9)</div>
+                    <div class="stat-value" id="indep-chi2" style="color: #c084fc;">&mdash;</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Independence p-value</div>
+                    <div class="stat-value" id="indep-pval">&mdash;</div>
+                </div>
+            </div>
+
+            <div class="charts-two-col">
+                <div class="chart-wrapper">
+                    <canvas id="chart-indep-scatter"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="chart-indep-condmean"></canvas>
+                </div>
+            </div>
+
+            <div id="indep-insight" class="insight-banner"></div>
+        </section>
+
+        <footer>
+            <p>Statistics Laboratory &bull; Homework 8: Correlation, Linear Regression &amp; Independence</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
